@@ -61,7 +61,7 @@ describe('HomePage', () => {
     (fixture.nativeElement.querySelectorAll('.stop-list button')[1] as HTMLButtonElement).click();
     fixture.detectChanges();
 
-    expect(selectors[0].textContent).toContain('Selecione seu local de embarque');
+    expect(selectors[0].textContent).toContain('Selecione local');
     expect(selectors[1].textContent).toContain('Batayporã, MS');
   });
 

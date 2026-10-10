@@ -20,7 +20,7 @@
           <button class="stop-selector" type="button" (click)="stopDialog.open('origin')">
             <span>
               <span class="kind">Origem</span>
-              <strong>{{ selectedStop()?.name ?? 'Selecione seu local de embarque' }}</strong>
+              <strong>{{ selectedStop()?.name ?? 'Selecione local' }}</strong>
             </span>
             <span class="selector-arrow" aria-hidden="true">›</span>
           </button>
@@ -28,7 +28,7 @@
           <button class="stop-selector" type="button" (click)="stopDialog.open('destination')">
             <span>
               <span class="kind">Destino</span>
-              <strong>{{ selectedDestination()?.name ?? 'Selecione seu destino' }}</strong>
+              <strong>{{ selectedDestination()?.name ?? 'Selecione local' }}</strong>
             </span>
             <span class="selector-arrow" aria-hidden="true">›</span>
           </button>
