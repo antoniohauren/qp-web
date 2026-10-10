@@ -32,6 +32,11 @@ export class HomePage {
   });
   protected readonly selectedDestination = signal<StopOption | null>(null);
   protected readonly selectedStop = signal<StopOption | null>(null);
+  protected readonly unavailableSelection = computed(
+    () =>
+      !this.loading() &&
+      (this.selectedStop()?.available === false || this.selectedDestination()?.available === false),
+  );
   protected readonly searchDisabled = computed(
     () =>
       !this.selectedStop()?.available ||

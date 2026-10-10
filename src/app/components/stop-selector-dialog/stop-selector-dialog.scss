@@ -159,6 +159,12 @@ input:focus-visible {
   font-weight: 600;
 }
 
+.stop-status {
+  display: block;
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-label-medium);
+}
+
 .stop-marker {
   box-sizing: border-box;
   width: 13px;

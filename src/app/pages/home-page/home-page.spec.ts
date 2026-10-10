@@ -180,7 +180,7 @@ describe('HomePage', () => {
 
     (selectors[0] as HTMLButtonElement).click();
     fixture.detectChanges();
-    (fixture.nativeElement.querySelector('.stop-list button') as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelector('.stop-list button[aria-disabled="false"]') as HTMLButtonElement).click();
     fixture.detectChanges();
     (selectors[1] as HTMLButtonElement).click();
     fixture.detectChanges();
@@ -199,17 +199,17 @@ describe('HomePage', () => {
 
     (selectors[0] as HTMLButtonElement).click();
     fixture.detectChanges();
-    (fixture.nativeElement.querySelectorAll('.stop-list button')[0] as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelectorAll('.stop-list button')[2] as HTMLButtonElement).click();
     fixture.detectChanges();
     (selectors[1] as HTMLButtonElement).click();
     fixture.detectChanges();
-    (fixture.nativeElement.querySelector('.stop-list button') as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelector('.stop-list button[aria-disabled="false"]') as HTMLButtonElement).click();
     fixture.detectChanges();
     (fixture.nativeElement.querySelector('.swap-stops') as HTMLButtonElement).click();
     fixture.detectChanges();
 
     expect(selectors[0].textContent).toContain('Rodoviária de Batayporã, MS');
-    expect(selectors[1].textContent).toContain('Batayporã, MS');
+    expect(selectors[1].textContent).toContain('Nova Andradina, MS');
   });
 
   it('highlights the selection for the current field', () => {
@@ -222,7 +222,7 @@ describe('HomePage', () => {
 
     origin.click();
     fixture.detectChanges();
-    (fixture.nativeElement.querySelector('.stop-list button') as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelector('.stop-list button[aria-disabled="false"]') as HTMLButtonElement).click();
     fixture.detectChanges();
     origin.click();
     fixture.detectChanges();
@@ -230,9 +230,15 @@ describe('HomePage', () => {
     const selected = fixture.nativeElement.querySelector('.stop-list button.selected');
     expect(selected).not.toBeNull();
     expect((selected as HTMLButtonElement).disabled).toBe(false);
+    expect(selected.getAttribute('aria-pressed')).toBe('true');
+    expect(selected.textContent).toContain('Selecionado');
+    expect(fixture.nativeElement.querySelectorAll('.stop-list [aria-pressed="true"]')).toHaveLength(1);
+    expect(
+      fixture.nativeElement.querySelector('.stop-list button:not(.selected)').getAttribute('aria-pressed'),
+    ).toBe('false');
   });
 
-  it('marks unavailable cities', () => {
+  it('marks unavailable cities and ignores selection for either field', () => {
     const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
     Object.assign(dialog, { showModal: () => dialog.setAttribute('open', '') });
 
@@ -242,6 +248,21 @@ describe('HomePage', () => {
     expect(fixture.nativeElement.querySelector('.stop-list button').classList).toContain(
       'unavailable',
     );
+    const status = fixture.nativeElement.querySelector('.stop-list button .stop-status');
+    expect(status.textContent).toBe('Indisponível');
+    expect(status.closest('[hidden], [aria-hidden="true"]')).toBeNull();
+    const selectors = fixture.nativeElement.querySelectorAll('.stop-selector');
+    for (const selector of [selectors[0], selectors[1]]) {
+      selector.click();
+      fixture.detectChanges();
+      const unavailable = fixture.nativeElement.querySelector('.stop-list button.unavailable');
+      expect(unavailable.getAttribute('aria-disabled')).toBe('true');
+      unavailable.click();
+      fixture.detectChanges();
+      expect(selector.textContent).toContain('Selecione local');
+      expect(unavailable.getAttribute('aria-pressed')).toBe('false');
+      expect(dialog.open).toBe(true);
+    }
   });
 
   it('selects a travel date from the date dialog', () => {
@@ -301,6 +322,9 @@ describe('HomePage', () => {
 
     expect(searchButton.disabled).toBe(true);
 
+    expect(fixture.nativeElement.querySelector('#search-unavailable')).toBeNull();
+    expect(searchButton.hasAttribute('aria-describedby')).toBe(false);
+
     (selectors[0] as HTMLButtonElement).click();
     fixture.detectChanges();
     (fixture.nativeElement.querySelectorAll('.stop-list button')[1] as HTMLButtonElement).click();
@@ -313,12 +337,28 @@ describe('HomePage', () => {
     fixture.detectChanges();
 
     expect(searchButton.disabled).toBe(false);
+    expect(fixture.nativeElement.querySelector('#search-unavailable')).toBeNull();
 
     (selectors[1] as HTMLButtonElement).click();
     fixture.detectChanges();
     (fixture.nativeElement.querySelector('.stop-list button') as HTMLButtonElement).click();
     fixture.detectChanges();
 
-    expect(searchButton.disabled).toBe(true);
+    expect(searchButton.disabled).toBe(false);
+    expect(selectors[1].textContent).toContain('Nova Andradina, MS');
+    expect(dialog.open).toBe(true);
+    expect(fixture.nativeElement.querySelector('#search-unavailable')).toBeNull();
+    expect(searchButton.hasAttribute('aria-describedby')).toBe(false);
+  });
+
+  it('does not explain unavailable selections while stops are loading', () => {
+    const loadingFixture = TestBed.createComponent(HomePage);
+    loadingFixture.detectChanges();
+    expect(loadingFixture.nativeElement.querySelector('.search-button').disabled).toBe(true);
+    expect(loadingFixture.nativeElement.querySelector('#search-unavailable')).toBeNull();
+    TestBed.inject(HttpTestingController)
+      .expectOne('http://127.0.0.1:8000/api/stops')
+      .flush([]);
+    loadingFixture.destroy();
   });
 });

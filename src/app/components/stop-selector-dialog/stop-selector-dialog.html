@@ -36,6 +36,8 @@
           [class.child-stop]="stop.type === 'station'"
           [class.selected]="isSelected(stop)"
           [class.unavailable]="!stop.available"
+          [attr.aria-disabled]="!stop.available"
+          [attr.aria-pressed]="isSelected(stop)"
           (click)="select(stop)"
         >
           <span class="stop-marker" aria-hidden="true"></span>
@@ -44,6 +46,12 @@
               <span class="kind">Cidade</span>
             }
             <strong>{{ stop.name }}</strong>
+            @if (!stop.available) {
+              <span class="stop-status">Indisponível</span>
+            }
+            @if (isSelected(stop)) {
+              <span class="stop-status">Selecionado</span>
+            }
           </span>
         </button>
       </li>

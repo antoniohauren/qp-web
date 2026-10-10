@@ -104,12 +104,18 @@
           class="search-button"
           type="button"
           [disabled]="loading() || searchDisabled()"
+          [attr.aria-describedby]="unavailableSelection() ? 'search-unavailable' : null"
           (click)="search()"
         >
           Buscar passagens
           <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">arrow_forward</mat-icon>
         </button>
       </div>
+      @if (unavailableSelection()) {
+        <p id="search-unavailable" role="status">
+          Origem ou destino indisponível. Escolha outro local para buscar passagens.
+        </p>
+      }
     }
   </section>
 </main>

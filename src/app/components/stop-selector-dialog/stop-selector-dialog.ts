@@ -61,6 +61,8 @@ export class StopSelectorDialog {
   }
 
   protected select(stop: StopOption) {
+    if (!stop.available) return;
+
     this.selected.emit({ field: this.field(), stop });
     this.dialog().nativeElement.close();
   }
