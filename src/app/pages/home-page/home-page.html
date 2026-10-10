@@ -1,1 +1,54 @@
 <app-header />
+
+<main>
+  <header class="page-heading">
+    <p class="eyebrow">Rede rodoviária</p>
+    <h1 id="stops-heading">Cidades e estações</h1>
+    <p>Encontre cada cidade e os pontos de embarque próximos a ela.</p>
+  </header>
+
+  <section aria-labelledby="stops-heading">
+    @if (loading()) {
+      <p class="status" role="status">Carregando cidades e estações...</p>
+    } @else if (loadError()) {
+      <p class="status status-error" role="alert">
+        Não foi possível carregar as cidades. Tente novamente mais tarde.
+      </p>
+    } @else {
+      <ul class="city-list">
+        @for (city of cities(); track city.id) {
+          <li class="city">
+            <div class="city-summary">
+              <div>
+                <span class="kind">Cidade</span>
+                <h2>{{ city.name }}</h2>
+              </div>
+              <span class="availability" [class.available]="city.available">
+                {{ city.available ? 'Disponível' : 'Indisponível' }}
+              </span>
+            </div>
+
+            @if (city.substops?.length) {
+              <div class="stations">
+                <h3>Estações</h3>
+                <ul>
+                  @for (station of city.substops; track station.id) {
+                    <li>
+                      <span class="station-marker" aria-hidden="true"></span>
+                      <span>
+                        <span class="kind">Estação</span>
+                        <strong>{{ station.name }}</strong>
+                      </span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </li>
+        } @empty {
+          <li class="status">Nenhuma cidade encontrada.</li>
+        }
+      </ul>
+    }
+  </section>
+</main>

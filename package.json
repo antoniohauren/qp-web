@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
+    "start": "set -a && . ./.env && ng serve --define \"API_URL='${API_URL}'\"",
+    "build": "set -a && . ./.env && ng build --define \"API_URL='${API_URL}'\"",
+    "watch": "set -a && . ./.env && ng build --watch --configuration development --define \"API_URL='${API_URL}'\"",
     "test": "ng test"
   },
   "private": true,
