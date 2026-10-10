@@ -1,4 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { Temporal } from '@js-temporal/polyfill';
+import { DatePickerDialog } from '../../components/date-picker-dialog/date-picker-dialog';
 import {
   StopOption,
   StopSelection,
@@ -8,7 +10,7 @@ import { Header } from '../../sections/header/header';
 import { Stop, StopsService } from '../../services/stops.service';
 
 @Component({
-  imports: [Header, StopSelectorDialog],
+  imports: [DatePickerDialog, Header, StopSelectorDialog],
   selector: 'app-home-page',
   styleUrl: './home-page.scss',
   templateUrl: './home-page.html',
@@ -18,6 +20,13 @@ export class HomePage {
   protected readonly cities = signal<Stop[]>([]);
   protected readonly loadError = signal(false);
   protected readonly loading = signal(true);
+  protected readonly selectedDate = signal('');
+  protected readonly selectedDateLabel = computed(() => {
+    const date = this.selectedDate();
+    return date
+      ? Temporal.PlainDate.from(date).toLocaleString('pt-BR', { dateStyle: 'long' })
+      : 'Selecione a data de embarque';
+  });
   protected readonly selectedDestination = signal<StopOption | null>(null);
   protected readonly selectedStop = signal<StopOption | null>(null);
   protected readonly swapAnimation = signal<'swap-a' | 'swap-b' | null>(null);

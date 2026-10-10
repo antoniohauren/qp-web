@@ -1,0 +1,67 @@
+<dialog #dialog aria-labelledby="date-picker-title">
+  <div class="dialog-heading">
+    <div>
+      <span class="eyebrow">Data da viagem</span>
+      <h2 id="date-picker-title">Quando você quer viajar?</h2>
+    </div>
+    <button class="close-button" type="button" aria-label="Fechar" (click)="dialog.close()">
+      <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+    </button>
+  </div>
+
+  <div class="calendar-header">
+    <button
+      class="month-button"
+      type="button"
+      aria-label="Mês anterior"
+      [disabled]="previousMonthDisabled()"
+      (click)="changeMonth(-1)"
+    >
+      <mat-icon fontSet="material-symbols-outlined">chevron_left</mat-icon>
+    </button>
+    <strong aria-live="polite">{{ monthLabel() }}</strong>
+    <button class="month-button" type="button" aria-label="Próximo mês" (click)="changeMonth(1)">
+      <mat-icon fontSet="material-symbols-outlined">chevron_right</mat-icon>
+    </button>
+  </div>
+
+  <div class="weekdays" aria-hidden="true">
+    <span>Dom</span>
+    <span>Seg</span>
+    <span>Ter</span>
+    <span>Qua</span>
+    <span>Qui</span>
+    <span>Sex</span>
+    <span>Sáb</span>
+  </div>
+
+  <div class="calendar-grid" role="grid" aria-label="Calendário">
+    @for (day of calendarDays(); track day.date.toString()) {
+      <button
+        class="calendar-day"
+        type="button"
+        [attr.aria-label]="day.date.toLocaleString('pt-BR', { dateStyle: 'long' })"
+        [attr.aria-selected]="isSelected(day.date)"
+        [attr.data-date]="day.date.toString()"
+        [class.outside-month]="day.outsideMonth"
+        [class.selected]="isSelected(day.date)"
+        [disabled]="day.disabled"
+        (click)="choose(day.date)"
+      >
+        {{ day.date.day }}
+      </button>
+    }
+  </div>
+
+  <div class="actions">
+    <button class="cancel-button" type="button" (click)="dialog.close()">Cancelar</button>
+    <button
+      class="confirm-button"
+      type="button"
+      [disabled]="!pendingDate()"
+      (click)="confirm()"
+    >
+      Confirmar data
+    </button>
+  </div>
+</dialog>

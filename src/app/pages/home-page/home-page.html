@@ -32,6 +32,14 @@
             </span>
             <span class="selector-arrow" aria-hidden="true">›</span>
           </button>
+
+          <button class="stop-selector" type="button" (click)="dateDialog.open()">
+            <span>
+              <span class="kind">Data da viagem</span>
+              <strong>{{ selectedDateLabel() }}</strong>
+            </span>
+            <span class="selector-arrow" aria-hidden="true">›</span>
+          </button>
         </div>
 
         <button
@@ -57,4 +65,10 @@
   [destination]="selectedDestination()"
   [origin]="selectedStop()"
   (selected)="selectStop($event)"
+/>
+
+<app-date-picker-dialog
+  #dateDialog
+  [selectedDate]="selectedDate()"
+  (selected)="selectedDate.set($event)"
 />

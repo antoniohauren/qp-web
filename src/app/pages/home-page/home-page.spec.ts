@@ -137,4 +137,32 @@ describe('HomePage', () => {
       'unavailable',
     );
   });
+
+  it('selects a travel date from the date dialog', () => {
+    const dialogs = fixture.nativeElement.querySelectorAll('dialog');
+    const dialog = dialogs[1] as HTMLDialogElement;
+    Object.assign(dialog, {
+      close: () => dialog.removeAttribute('open'),
+      showModal: () => dialog.setAttribute('open', ''),
+    });
+
+    const selectors = fixture.nativeElement.querySelectorAll('.stop-selector');
+    (selectors[2] as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const day = fixture.nativeElement.querySelector(
+      '.calendar-day:not(:disabled):not(.outside-month)',
+    ) as HTMLButtonElement;
+    const selectedDate = day.dataset['date']!;
+    day.click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.confirm-button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const expectedLabel = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long' }).format(
+      new Date(`${selectedDate}T00:00:00`),
+    );
+    expect(selectors[2].textContent).toContain(expectedLabel);
+    expect(dialog.hasAttribute('open')).toBe(false);
+  });
 });

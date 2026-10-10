@@ -1,4 +1,5 @@
 import { Component, ElementRef, computed, input, output, signal, viewChild } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
 import { Stop } from '../../services/stops.service';
 
 export interface StopOption {
@@ -22,6 +23,7 @@ const normalize = (value: string) =>
     .toLocaleLowerCase('pt-BR');
 
 @Component({
+  imports: [MatIcon],
   selector: 'app-stop-selector-dialog',
   styleUrl: './stop-selector-dialog.scss',
   templateUrl: './stop-selector-dialog.html',

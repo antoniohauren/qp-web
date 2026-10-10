@@ -44,6 +44,7 @@ dialog::backdrop {
 }
 
 .close-button {
+  display: grid;
   width: 42px;
   height: 42px;
   flex: none;
@@ -53,6 +54,7 @@ dialog::backdrop {
   color: var(--mat-sys-on-surface);
   font-size: 27px;
   line-height: 1;
+  place-items: center;
   cursor: pointer;
 }
 
