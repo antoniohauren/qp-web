@@ -34,7 +34,6 @@
     } @else if (trips().length) {
       <section class="results" aria-labelledby="results-heading">
         <h2 id="results-heading">{{ trips().length }} viagens encontradas</h2>
-        <p id="trip-selection-unavailable">A escolha de viagens ainda não está disponível.</p>
 
         @for (trip of trips(); track trip.id) {
           <article class="trip-card">
@@ -60,7 +59,6 @@
               type="button"
               class="choose-button"
               disabled
-              aria-describedby="trip-selection-unavailable"
               [attr.aria-label]="'Escolher viagem com saída às ' + trip.departure.time.slice(0, 5)"
             >
               Escolher
