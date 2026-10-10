@@ -109,13 +109,12 @@ h2 {
   cursor: pointer;
 }
 
-.calendar-day:not(:disabled):hover {
+.calendar-day:not(:disabled):not(.selected):hover {
   background: var(--mat-sys-surface-container-high);
 }
 
 .calendar-day.outside-month {
   color: var(--mat-sys-on-surface-variant);
-  opacity: 0.55;
 }
 
 .calendar-day.selected {
