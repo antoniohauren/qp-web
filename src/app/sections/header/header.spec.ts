@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { Header } from './header';
 
 describe('Header', () => {
@@ -8,6 +9,7 @@ describe('Header', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Header],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Header);
@@ -22,7 +24,8 @@ describe('Header', () => {
   it('should render the logo and customer area button', () => {
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.querySelector('.logo')?.textContent).toBe('passagem');
+    expect(element.querySelector('.logo')?.textContent).toBe('Passagens');
+    expect(element.querySelector<HTMLAnchorElement>('.logo')?.getAttribute('href')).toBe('/');
     expect(element.querySelector('button')?.textContent?.trim()).toBe(
       'Área do cliente',
     );

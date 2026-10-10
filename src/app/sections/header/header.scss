@@ -4,6 +4,7 @@
 
 header {
   border-bottom: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container-lowest);
 }
 
 .header-content {
@@ -11,7 +12,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1200px;
+  max-width: 960px;
   min-height: 72px;
   margin: 0 auto;
   padding: 0 24px;
@@ -22,6 +23,44 @@ header {
   font: var(--mat-sys-title-large);
   font-weight: 700;
   letter-spacing: -0.04em;
+  text-decoration: none;
+}
+
+.logo:focus-visible {
+  border-radius: 4px;
+  outline: 3px solid var(--mat-sys-primary);
+  outline-offset: 4px;
+}
+
+.customer-button {
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--mat-sys-primary);
+  font: var(--mat-sys-label-large);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.customer-button:hover {
+  border-color: var(--mat-sys-primary);
+  background: color-mix(in srgb, var(--mat-sys-primary) 8%, transparent);
+}
+
+.customer-button:focus-visible {
+  outline: 3px solid var(--mat-sys-primary);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-button {
+    transition: none;
+  }
 }
 
 @media (max-width: 600px) {

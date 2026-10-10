@@ -74,8 +74,8 @@
           [disabled]="searchDisabled()"
           [routerLink]="['/passagens']"
           [queryParams]="{
-            from: selectedStop()?.name,
-            to: selectedDestination()?.name,
+            from: selectedStop()?.id,
+            to: selectedDestination()?.id,
             date: selectedDate(),
           }"
         >
