@@ -32,13 +32,16 @@
       <li>
         <button
           type="button"
+          [class.child-stop]="stop.type === 'station'"
           [class.selected]="isSelected(stop)"
           [class.unavailable]="!stop.available"
           (click)="select(stop)"
         >
           <span class="stop-marker" aria-hidden="true"></span>
           <span>
-            <span class="kind">{{ stop.type === 'city' ? 'Cidade' : 'Estação' }}</span>
+            @if (stop.type === 'city') {
+              <span class="kind">Cidade</span>
+            }
             <strong>{{ stop.name }}</strong>
           </span>
         </button>

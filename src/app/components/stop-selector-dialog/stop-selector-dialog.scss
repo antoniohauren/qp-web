@@ -113,20 +113,41 @@ input:focus-visible {
   background: var(--mat-sys-surface-container-low);
 }
 
+.stop-list button.child-stop {
+  padding-left: 34px;
+  color: var(--mat-sys-primary);
+}
+
+.stop-list button.child-stop .stop-marker {
+  width: 18px;
+  height: auto;
+  border: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.stop-list button.child-stop .stop-marker::before {
+  content: '↳';
+}
+
 .stop-list button.unavailable .kind {
   color: var(--mat-sys-error);
 }
 
 .stop-list button.unavailable .stop-marker {
-  border-color: var(--mat-sys-error);
+  color: var(--mat-sys-error);
 }
 
 .stop-list button.selected .kind {
   color: var(--mat-sys-tertiary);
 }
 
+.stop-list button.child-stop.selected {
+  color: var(--mat-sys-tertiary);
+}
+
 .stop-list button.selected .stop-marker {
-  border-color: var(--mat-sys-tertiary);
+  color: var(--mat-sys-tertiary);
 }
 
 .stop-list strong {
@@ -141,8 +162,9 @@ input:focus-visible {
   width: 13px;
   height: 13px;
   flex: none;
-  border: 3px solid var(--mat-sys-primary);
+  border: 3px solid currentColor;
   border-radius: 50%;
+  color: var(--mat-sys-primary);
 }
 
 .empty-result {
