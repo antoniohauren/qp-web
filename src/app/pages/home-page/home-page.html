@@ -36,4 +36,10 @@
   </section>
 </main>
 
-<app-stop-selector-dialog #stopDialog [cities]="cities()" (selected)="selectStop($event)" />
+<app-stop-selector-dialog
+  #stopDialog
+  [cities]="cities()"
+  [destination]="selectedDestination()"
+  [origin]="selectedStop()"
+  (selected)="selectStop($event)"
+/>

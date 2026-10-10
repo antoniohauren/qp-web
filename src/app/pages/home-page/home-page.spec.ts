@@ -63,4 +63,55 @@ describe('HomePage', () => {
     expect(selectors[0].textContent).toContain('Selecione seu local de embarque');
     expect(selectors[1].textContent).toContain('Batayporã, MS');
   });
+
+  it('hides the selected origin from destination options', () => {
+    const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    Object.assign(dialog, {
+      close: () => dialog.removeAttribute('open'),
+      showModal: () => dialog.setAttribute('open', ''),
+    });
+    const selectors = fixture.nativeElement.querySelectorAll('.stop-selector');
+
+    (selectors[0] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.stop-list button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (selectors[1] as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const options = fixture.nativeElement.querySelectorAll('.stop-list button');
+    expect(options).toHaveLength(1);
+  });
+
+  it('highlights the selection for the current field', () => {
+    const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    Object.assign(dialog, {
+      close: () => dialog.removeAttribute('open'),
+      showModal: () => dialog.setAttribute('open', ''),
+    });
+    const origin = fixture.nativeElement.querySelector('.stop-selector') as HTMLButtonElement;
+
+    origin.click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.stop-list button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    origin.click();
+    fixture.detectChanges();
+
+    const selected = fixture.nativeElement.querySelector('.stop-list button.selected');
+    expect(selected).not.toBeNull();
+    expect((selected as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('marks unavailable cities', () => {
+    const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    Object.assign(dialog, { showModal: () => dialog.setAttribute('open', '') });
+
+    (fixture.nativeElement.querySelector('.stop-selector') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.stop-list button').classList).toContain(
+      'unavailable',
+    );
+  });
 });

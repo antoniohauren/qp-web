@@ -30,7 +30,12 @@
   <ul class="stop-list">
     @for (stop of filteredStops(); track stop.id) {
       <li>
-        <button type="button" (click)="select(stop)">
+        <button
+          type="button"
+          [class.selected]="isSelected(stop)"
+          [class.unavailable]="!stop.available"
+          (click)="select(stop)"
+        >
           <span class="stop-marker" aria-hidden="true"></span>
           <span>
             <span class="kind">{{ stop.type === 'city' ? 'Cidade' : 'Estação' }}</span>

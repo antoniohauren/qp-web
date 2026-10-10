@@ -2,6 +2,7 @@ import { Component, ElementRef, computed, input, output, signal, viewChild } fro
 import { Stop } from '../../services/stops.service';
 
 export interface StopOption {
+  available: boolean;
   id: string;
   name: string;
   type: 'city' | 'station';
@@ -28,21 +29,27 @@ const normalize = (value: string) =>
 export class StopSelectorDialog {
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   readonly cities = input.required<Stop[]>();
+  readonly destination = input<StopOption | null>(null);
+  readonly origin = input<StopOption | null>(null);
   readonly selected = output<StopSelection>();
   protected readonly field = signal<SelectionField>('origin');
   protected readonly searchQuery = signal('');
   protected readonly filteredStops = computed(() => {
     const query = normalize(this.searchQuery().trim());
+    const oppositeStop = this.field() === 'origin' ? this.destination() : this.origin();
     return this.cities()
       .flatMap<StopOption>((city) => [
-        { id: city.id, name: city.name, type: 'city' },
+        { available: city.available, id: city.id, name: city.name, type: 'city' },
         ...(city.substops ?? []).map((station) => ({
+          available: true,
           id: station.id,
           name: station.name,
           type: station.type,
         })),
       ])
-      .filter((stop) => !query || normalize(stop.name).includes(query));
+      .filter(
+        (stop) => stop.id !== oppositeStop?.id && (!query || normalize(stop.name).includes(query)),
+      );
   });
 
   open(field: SelectionField) {
@@ -54,5 +61,10 @@ export class StopSelectorDialog {
   protected select(stop: StopOption) {
     this.selected.emit({ field: this.field(), stop });
     this.dialog().nativeElement.close();
+  }
+
+  protected isSelected(stop: StopOption) {
+    const selectedStop = this.field() === 'origin' ? this.origin() : this.destination();
+    return stop.id === selectedStop?.id;
   }
 }
