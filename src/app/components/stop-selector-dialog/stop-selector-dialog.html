@@ -1,0 +1,45 @@
+<dialog #dialog aria-labelledby="selector-title">
+  <div class="dialog-heading">
+    <div>
+      <span class="eyebrow">Local de embarque</span>
+      <h2 id="selector-title">
+        {{ field() === 'origin' ? 'Onde começa sua viagem?' : 'Para onde você vai?' }}
+      </h2>
+    </div>
+    <button class="close-button" type="button" aria-label="Fechar" (click)="dialog.close()">
+      ×
+    </button>
+  </div>
+
+  <label for="stop-search">Buscar cidade ou estação</label>
+  <input
+    #searchInput
+    id="stop-search"
+    type="search"
+    autocomplete="off"
+    placeholder="Digite para buscar"
+    [value]="searchQuery()"
+    (input)="searchQuery.set(searchInput.value)"
+  />
+
+  <p class="result-count" aria-live="polite">
+    {{ filteredStops().length }}
+    {{ filteredStops().length === 1 ? 'local encontrado' : 'locais encontrados' }}
+  </p>
+
+  <ul class="stop-list">
+    @for (stop of filteredStops(); track stop.id) {
+      <li>
+        <button type="button" (click)="select(stop)">
+          <span class="stop-marker" aria-hidden="true"></span>
+          <span>
+            <span class="kind">{{ stop.type === 'city' ? 'Cidade' : 'Estação' }}</span>
+            <strong>{{ stop.name }}</strong>
+          </span>
+        </button>
+      </li>
+    } @empty {
+      <li class="empty-result">Nenhum local corresponde à busca.</li>
+    }
+  </ul>
+</dialog>

@@ -16,7 +16,7 @@
       </p>
     } @else {
       <div class="route-selectors">
-        <button class="stop-selector" type="button" (click)="openSelector(stopDialog, 'origin')">
+        <button class="stop-selector" type="button" (click)="stopDialog.open('origin')">
           <span>
             <span class="kind">Origem</span>
             <strong>{{ selectedStop()?.name ?? 'Selecione seu local de embarque' }}</strong>
@@ -24,7 +24,7 @@
           <span class="selector-arrow" aria-hidden="true">›</span>
         </button>
 
-        <button class="stop-selector" type="button" (click)="openSelector(stopDialog, 'destination')">
+        <button class="stop-selector" type="button" (click)="stopDialog.open('destination')">
           <span>
             <span class="kind">Destino</span>
             <strong>{{ selectedDestination()?.name ?? 'Selecione seu destino' }}</strong>
@@ -36,47 +36,4 @@
   </section>
 </main>
 
-<dialog #stopDialog aria-labelledby="selector-title">
-  <div class="dialog-heading">
-    <div>
-      <span class="eyebrow">Local de embarque</span>
-      <h2 id="selector-title">
-        {{ selectionField() === 'origin' ? 'Onde começa sua viagem?' : 'Para onde você vai?' }}
-      </h2>
-    </div>
-    <button class="close-button" type="button" aria-label="Fechar" (click)="stopDialog.close()">
-      ×
-    </button>
-  </div>
-
-  <label for="stop-search">Buscar cidade ou estação</label>
-  <input
-    #searchInput
-    id="stop-search"
-    type="search"
-    autocomplete="off"
-    placeholder="Digite para buscar"
-    [value]="searchQuery()"
-    (input)="searchQuery.set(searchInput.value)"
-  />
-
-  <p class="result-count" aria-live="polite">
-    {{ filteredStops().length }} {{ filteredStops().length === 1 ? 'local encontrado' : 'locais encontrados' }}
-  </p>
-
-  <ul class="stop-list">
-    @for (stop of filteredStops(); track stop.id) {
-      <li>
-        <button type="button" (click)="selectStop(stop, stopDialog)">
-          <span class="stop-marker" aria-hidden="true"></span>
-          <span>
-            <span class="kind">{{ stop.type === 'city' ? 'Cidade' : 'Estação' }}</span>
-            <strong>{{ stop.name }}</strong>
-          </span>
-        </button>
-      </li>
-    } @empty {
-      <li class="empty-result">Nenhum local corresponde à busca.</li>
-    }
-  </ul>
-</dialog>
+<app-stop-selector-dialog #stopDialog [cities]="cities()" (selected)="selectStop($event)" />
