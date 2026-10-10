@@ -13,11 +13,7 @@
         @for (item of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track item) {
           <article class="trip-card skeleton-card" aria-hidden="true">
             @for (detail of [1, 2, 3, 4]; track detail) {
-              <div
-                class="trip-detail"
-                [class.duration]="detail === 3"
-                [class.price]="detail === 4"
-              >
+              <div class="trip-detail" [class.duration]="detail === 3" [class.price]="detail === 4">
                 <span class="skeleton skeleton-label"></span>
                 <span class="skeleton skeleton-value"></span>
                 @if (detail <= 2) {
@@ -55,14 +51,22 @@
               <span>Preço</span>
               <strong>{{ formatPrice(trip.price.price) }}</strong>
             </div>
-            <button
-              type="button"
+            <a
               class="choose-button"
-              disabled
+              routerLink="/assentos"
+              [queryParams]="{
+                travelId: trip.id,
+                from: trip.from.name,
+                to: trip.to.name,
+                company: trip.company.name,
+                seatClass: trip.seatClass,
+                departureDate: trip.departure.date,
+                departureTime: trip.departure.time,
+              }"
               [attr.aria-label]="'Escolher viagem com saída às ' + trip.departure.time.slice(0, 5)"
             >
               Escolher
-            </button>
+            </a>
           </article>
         }
       </section>

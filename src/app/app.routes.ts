@@ -9,4 +9,8 @@ export const routes: Routes = [
     path: 'passagens',
     loadComponent: () => import('./pages/trips-page/trips-page').then(({ TripsPage }) => TripsPage),
   },
+  {
+    path: 'assentos',
+    loadComponent: () => import('./pages/seats-page/seats-page').then(({ SeatsPage }) => SeatsPage),
+  },
 ];

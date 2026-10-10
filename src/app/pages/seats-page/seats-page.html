@@ -1,0 +1,86 @@
+<app-header />
+
+<main>
+  <header class="page-heading">
+    <p class="eyebrow">Mapa do ônibus</p>
+    @if (from() && to()) {
+      <h1>{{ from() }} <span class="route-separator">para</span> {{ to() }}</h1>
+    } @else {
+      <h1>Assentos da viagem</h1>
+    }
+    <div class="trip-meta" aria-label="Informações da viagem">
+      @if (departureLabel()) {
+        <span>{{ departureLabel() }}</span>
+      }
+      @if (company()) {
+        <span>{{ company() }}</span>
+      }
+      @if (seatClass()) {
+        <span>{{ seatClass() }}</span>
+      }
+    </div>
+  </header>
+
+  @if (!travelId()) {
+    <p class="status" role="alert">Viagem não informada. Volte e escolha uma passagem.</p>
+  } @else if (loading()) {
+    <section class="status loading" role="status">
+      <span class="skeleton loading-line"></span>
+      Carregando mapa de assentos…
+    </section>
+  } @else if (loadError()) {
+    <p class="status status-error" role="alert">Não foi possível carregar os assentos.</p>
+  } @else if (layouts().length) {
+    <aside class="legend" aria-label="Legenda do mapa">
+      <span><i class="legend-seat available"></i>Disponível</span>
+      <span><i class="legend-seat occupied"></i>Ocupado</span>
+    </aside>
+
+    @for (layout of layouts(); track layout.floor) {
+      <section class="deck" [attr.aria-labelledby]="'floor-' + layout.floor">
+        <header class="deck-heading">
+          <span class="front-label">Frente</span>
+          <div>
+            <p>Ônibus</p>
+            <h2 [id]="'floor-' + layout.floor">Piso {{ layout.floor + 1 }}</h2>
+          </div>
+        </header>
+
+        <div class="seat-map">
+          <table>
+            <caption>
+              Mapa de assentos do piso
+              {{
+                layout.floor + 1
+              }}
+            </caption>
+            <tbody>
+              @for (row of layout.seats; track $index) {
+                <tr>
+                  @for (cell of row; track cell.position.x + '-' + cell.position.y) {
+                    <td [class.empty-cell]="cell.type === 'emptyOrReservedSpace' || !cell.seat">
+                      @if (cell.type === 'seat' && cell.seat) {
+                        <span
+                          class="seat"
+                          [class.occupied]="cell.occupied"
+                          role="img"
+                          [attr.aria-label]="
+                            'Assento ' + cell.seat + (cell.occupied ? ', ocupado' : ', disponível')
+                          "
+                        >
+                          {{ cell.seat }}
+                        </span>
+                      }
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  } @else {
+    <p class="status" role="status">Nenhum assento encontrado para esta viagem.</p>
+  }
+</main>

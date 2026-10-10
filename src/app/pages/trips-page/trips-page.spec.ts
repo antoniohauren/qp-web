@@ -23,11 +23,13 @@ describe('TripsPage', () => {
       .flush([
         {
           id: 'trip-1',
+          company: { id: '2', name: '1001' },
           from: { name: 'São Paulo, SP - Rodoviária do Tietê' },
           to: { name: 'Curitiba, PR - Rodoviária' },
           departure: { date: '2026-10-11', time: '08:30:00' },
           arrival: { date: '2026-10-11', time: '14:45:00' },
           travelDuration: 22500,
+          seatClass: 'EXECUTIVO',
           price: { price: 79.9 },
         },
       ]);

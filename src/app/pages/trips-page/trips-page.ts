@@ -1,12 +1,12 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Temporal } from '@js-temporal/polyfill';
 import { Header } from '../../sections/header/header';
 import { Trip, TripsService } from '../../services/trips.service';
 
 @Component({
-  imports: [Header],
+  imports: [Header, RouterLink],
   selector: 'app-trips-page',
   styleUrl: './trips-page.scss',
   templateUrl: './trips-page.html',
