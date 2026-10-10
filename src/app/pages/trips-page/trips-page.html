@@ -51,22 +51,14 @@
               <span>Preço</span>
               <strong>{{ formatPrice(trip.price.price) }}</strong>
             </div>
-            <a
+            <button
               class="choose-button"
-              routerLink="/assentos"
-              [queryParams]="{
-                travelId: trip.id,
-                from: trip.from.name,
-                to: trip.to.name,
-                company: trip.company.name,
-                seatClass: trip.seatClass,
-                departureDate: trip.departure.date,
-                departureTime: trip.departure.time,
-              }"
+              type="button"
               [attr.aria-label]="'Escolher viagem com saída às ' + trip.departure.time.slice(0, 5)"
+              (click)="openSeats(trip)"
             >
               Escolher
-            </a>
+            </button>
           </article>
         }
       </section>
@@ -79,3 +71,87 @@
     </p>
   }
 </main>
+
+<dialog #seatsDialog class="seats-dialog" aria-labelledby="seats-title">
+  @if (selectedTrip(); as trip) {
+    <header class="dialog-heading">
+      <div>
+        <p class="eyebrow">Mapa do ônibus</p>
+        <h2 id="seats-title">
+          {{ trip.from.name }} <span class="route-separator">para</span> {{ trip.to.name }}
+        </h2>
+        <div class="trip-meta" aria-label="Informações da viagem">
+          <span>{{ formatDateTime(trip.departure) }}</span>
+          <span>{{ trip.company.name }}</span>
+          <span>{{ trip.seatClass }}</span>
+        </div>
+      </div>
+      <button class="close-button" type="button" aria-label="Fechar" (click)="closeSeats()">
+        <mat-icon fontSet="material-symbols-outlined">close</mat-icon>
+      </button>
+    </header>
+
+    @if (seatsLoading()) {
+      <section class="seat-status loading" role="status">
+        <span class="skeleton loading-line"></span>
+        Carregando mapa de assentos…
+      </section>
+    } @else if (seatsLoadError()) {
+      <p class="seat-status status-error" role="alert">Não foi possível carregar os assentos.</p>
+    } @else if (layouts().length) {
+      <aside class="legend" aria-label="Legenda do mapa">
+        <span><i class="legend-seat available"></i>Disponível</span>
+        <span><i class="legend-seat occupied"></i>Ocupado</span>
+      </aside>
+
+      @for (layout of layouts(); track layout.floor) {
+        <section class="deck" [attr.aria-labelledby]="'floor-' + layout.floor">
+          <header class="deck-heading">
+            <span class="front-label">Frente</span>
+            <div>
+              <p>Ônibus</p>
+              <h3 [id]="'floor-' + layout.floor">Piso {{ layout.floor + 1 }}</h3>
+            </div>
+          </header>
+
+          <div class="seat-map">
+            <table>
+              <caption>
+                Mapa de assentos do piso
+                {{
+                  layout.floor + 1
+                }}
+              </caption>
+              <tbody>
+                @for (row of layout.seats; track $index) {
+                  <tr>
+                    @for (cell of row; track cell.position.x + '-' + cell.position.y) {
+                      <td [class.empty-cell]="cell.type === 'emptyOrReservedSpace' || !cell.seat">
+                        @if (cell.type === 'seat' && cell.seat) {
+                          <span
+                            class="seat"
+                            [class.occupied]="cell.occupied"
+                            role="img"
+                            [attr.aria-label]="
+                              'Assento ' +
+                              cell.seat +
+                              (cell.occupied ? ', ocupado' : ', disponível')
+                            "
+                          >
+                            {{ cell.seat }}
+                          </span>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    } @else {
+      <p class="seat-status" role="status">Nenhum assento encontrado para esta viagem.</p>
+    }
+  }
+</dialog>

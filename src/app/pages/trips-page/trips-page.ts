@@ -1,23 +1,29 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { MatIcon } from '@angular/material/icon';
 import { Temporal } from '@js-temporal/polyfill';
+import { Subscription } from 'rxjs';
 import { Header } from '../../sections/header/header';
+import { SeatsLayout, SeatsService } from '../../services/seats.service';
 import { Trip, TripsService } from '../../services/trips.service';
 
 @Component({
-  imports: [Header, RouterLink],
+  imports: [Header, MatIcon],
   selector: 'app-trips-page',
   styleUrl: './trips-page.scss',
   templateUrl: './trips-page.html',
 })
 export class TripsPage {
+  private readonly seatsDialog = viewChild.required<ElementRef<HTMLDialogElement>>('seatsDialog');
   private readonly params = toSignal(inject(ActivatedRoute).queryParamMap, { requireSync: true });
   private readonly priceFormatter = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
   });
+  private readonly seatsService = inject(SeatsService);
   private readonly tripsService = inject(TripsService);
+  private seatsRequest?: Subscription;
   protected readonly from = computed(() => this.params().get('from') ?? '');
   protected readonly to = computed(() => this.params().get('to') ?? '');
   protected readonly date = computed(() => this.params().get('date') ?? '');
@@ -25,6 +31,10 @@ export class TripsPage {
   protected readonly trips = signal<Trip[]>([]);
   protected readonly loading = signal(false);
   protected readonly loadError = signal(false);
+  protected readonly selectedTrip = signal<Trip | null>(null);
+  protected readonly layouts = signal<SeatsLayout[]>([]);
+  protected readonly seatsLoading = signal(false);
+  protected readonly seatsLoadError = signal(false);
   protected readonly dateLabel = computed(() => {
     try {
       return Temporal.PlainDate.from(this.date()).toLocaleString('pt-BR', { dateStyle: 'long' });
@@ -68,5 +78,37 @@ export class TripsPage {
 
   protected formatPrice(price: number) {
     return this.priceFormatter.format(price);
+  }
+
+  protected openSeats(trip: Trip) {
+    this.seatsRequest?.unsubscribe();
+    this.selectedTrip.set(trip);
+    this.layouts.set([]);
+    this.seatsLoadError.set(false);
+    this.seatsLoading.set(true);
+    this.seatsDialog().nativeElement.showModal();
+
+    this.seatsRequest = this.seatsService.getSeats(trip.id).subscribe({
+      next: (layouts) =>
+        this.layouts.set(
+          layouts.map((layout) => ({
+            ...layout,
+            seats: layout.seats
+              .map((row) => [...row].sort((a, b) => a.position.x - b.position.x))
+              .sort((a, b) => (b[0]?.position.y ?? 0) - (a[0]?.position.y ?? 0)),
+          })),
+        ),
+      error: () => {
+        this.seatsLoadError.set(true);
+        this.seatsLoading.set(false);
+      },
+      complete: () => this.seatsLoading.set(false),
+    });
+  }
+
+  protected closeSeats() {
+    this.seatsRequest?.unsubscribe();
+    this.seatsLoading.set(false);
+    this.seatsDialog().nativeElement.close();
   }
 }
