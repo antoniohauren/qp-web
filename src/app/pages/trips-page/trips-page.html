@@ -1,0 +1,38 @@
+<app-header />
+
+<main>
+  <header class="page-heading">
+    <p class="eyebrow">Sua viagem</p>
+    <h1>Confira os dados da busca</h1>
+    <p>Origem, destino e data reunidos antes de escolher sua passagem.</p>
+  </header>
+
+  @if (complete()) {
+    <section class="trip-card" aria-labelledby="route-heading">
+      <div class="route-line" aria-hidden="true">
+        <span></span>
+        <i></i>
+        <span></span>
+      </div>
+
+      <div class="place">
+        <span>Origem</span>
+        <h2 id="route-heading">{{ from() }}</h2>
+      </div>
+
+      <div class="place destination">
+        <span>Destino</span>
+        <strong>{{ to() }}</strong>
+      </div>
+
+      <div class="travel-date">
+        <span>Data da viagem</span>
+        <strong>{{ dateLabel() }}</strong>
+      </div>
+    </section>
+  } @else {
+    <p class="status" role="alert">
+      Dados da viagem incompletos. Volte e selecione origem, destino e data.
+    </p>
+  }
+</main>

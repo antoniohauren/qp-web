@@ -1,4 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
 import { Temporal } from '@js-temporal/polyfill';
 import { DatePickerDialog } from '../../components/date-picker-dialog/date-picker-dialog';
 import {
@@ -10,7 +12,7 @@ import { Header } from '../../sections/header/header';
 import { Stop, StopsService } from '../../services/stops.service';
 
 @Component({
-  imports: [DatePickerDialog, Header, StopSelectorDialog],
+  imports: [DatePickerDialog, Header, MatIcon, RouterLink, StopSelectorDialog],
   selector: 'app-home-page',
   styleUrl: './home-page.scss',
   templateUrl: './home-page.html',
@@ -29,6 +31,12 @@ export class HomePage {
   });
   protected readonly selectedDestination = signal<StopOption | null>(null);
   protected readonly selectedStop = signal<StopOption | null>(null);
+  protected readonly searchDisabled = computed(
+    () =>
+      !this.selectedStop()?.available ||
+      !this.selectedDestination()?.available ||
+      !this.selectedDate(),
+  );
   protected readonly swapAnimation = signal<'swap-a' | 'swap-b' | null>(null);
 
   constructor() {

@@ -140,6 +140,52 @@ h1 {
   stroke-width: 2;
 }
 
+.search-button {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 56px;
+  margin-top: 8px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  font: var(--mat-sys-title-medium);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.search-button:not(:disabled):hover {
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--mat-sys-primary) 28%, transparent);
+  transform: translateY(-2px);
+}
+
+.search-button:focus-visible {
+  outline: 3px solid var(--mat-sys-primary);
+  outline-offset: 3px;
+}
+
+.search-button:disabled {
+  background: var(--mat-sys-surface-container-high);
+  color: var(--mat-sys-on-surface-variant);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.search-button mat-icon {
+  transition: transform 160ms ease;
+}
+
+.search-button:not(:disabled):hover mat-icon {
+  transform: translateX(4px);
+}
+
 @keyframes swap-spin {
   50% {
     scale: 1.14;
@@ -164,6 +210,11 @@ h1 {
   .swap-stops.swap-a,
   .swap-stops.swap-b {
     animation: none;
+  }
+
+  .search-button,
+  .search-button mat-icon {
+    transition: none;
   }
 }
 

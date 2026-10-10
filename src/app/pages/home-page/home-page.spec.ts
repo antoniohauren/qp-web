@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { Temporal } from '@js-temporal/polyfill';
 import { HomePage } from './home-page';
 
@@ -11,7 +12,7 @@ describe('HomePage', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HomePage],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
 
     const station = {
@@ -34,6 +35,13 @@ describe('HomePage', () => {
           type: 'city',
           substops: [station],
           available: false,
+        },
+        {
+          id: 'CIT_940',
+          name: 'Nova Andradina, MS',
+          url: 'nova-andradina-ms',
+          type: 'city',
+          available: true,
         },
       ]);
     await fixture.whenStable();
@@ -81,7 +89,7 @@ describe('HomePage', () => {
     fixture.detectChanges();
 
     const options = fixture.nativeElement.querySelectorAll('.stop-list button');
-    expect(options).toHaveLength(1);
+    expect(options).toHaveLength(2);
   });
 
   it('swaps the origin and destination', () => {
@@ -176,5 +184,37 @@ describe('HomePage', () => {
     expect(fixture.nativeElement.querySelectorAll('.stop-selector')[2].textContent).toContain(
       tomorrow.toLocaleString('pt-BR', { dateStyle: 'long' }),
     );
+  });
+
+  it('enables search only for complete, available routes', () => {
+    const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    Object.assign(dialog, {
+      close: () => dialog.removeAttribute('open'),
+      showModal: () => dialog.setAttribute('open', ''),
+    });
+    const selectors = fixture.nativeElement.querySelectorAll('.stop-selector');
+    const searchButton = fixture.nativeElement.querySelector('.search-button') as HTMLButtonElement;
+
+    expect(searchButton.disabled).toBe(true);
+
+    (selectors[0] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelectorAll('.stop-list button')[1] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (selectors[1] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelectorAll('.stop-list button')[1] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.tomorrow-date') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(searchButton.disabled).toBe(false);
+
+    (selectors[1] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.stop-list button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(searchButton.disabled).toBe(true);
   });
 });
