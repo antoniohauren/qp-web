@@ -104,12 +104,7 @@
           class="search-button"
           type="button"
           [disabled]="loading() || searchDisabled()"
-          [routerLink]="['/passagens']"
-          [queryParams]="{
-            from: selectedStop()?.id,
-            to: selectedDestination()?.id,
-            date: selectedDate(),
-          }"
+          (click)="search()"
         >
           Buscar passagens
           <mat-icon aria-hidden="true" fontSet="material-symbols-outlined">arrow_forward</mat-icon>

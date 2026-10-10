@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { Temporal } from '@js-temporal/polyfill';
 import { DatePickerDialog } from '../../components/date-picker-dialog/date-picker-dialog';
 import {
@@ -12,13 +12,14 @@ import { Header } from '../../sections/header/header';
 import { Stop, StopsService } from '../../services/stops.service';
 
 @Component({
-  imports: [DatePickerDialog, Header, MatIcon, RouterLink, StopSelectorDialog],
+  imports: [DatePickerDialog, Header, MatIcon, StopSelectorDialog],
   selector: 'app-home-page',
   styleUrl: './home-page.scss',
   templateUrl: './home-page.html',
 })
 export class HomePage {
   private readonly stopsService = inject(StopsService);
+  private readonly router = inject(Router);
   protected readonly cities = signal<Stop[]>([]);
   protected readonly loadError = signal(false);
   protected readonly loading = signal(true);
@@ -60,6 +61,23 @@ export class HomePage {
 
   protected selectTomorrow() {
     this.selectedDate.set(Temporal.Now.plainDateISO().add({ days: 1 }).toString());
+  }
+
+  protected search() {
+    const date = this.selectedDate();
+    if (date && Temporal.PlainDate.compare(date, Temporal.Now.plainDateISO()) < 0) {
+      this.selectedDate.set('');
+      return;
+    }
+    if (this.loading() || this.searchDisabled()) return;
+
+    void this.router.navigate(['/passagens'], {
+      queryParams: {
+        from: this.selectedStop()?.id,
+        to: this.selectedDestination()?.id,
+        date,
+      },
+    });
   }
 
   protected swapStops() {

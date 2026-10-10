@@ -1,8 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { Temporal } from '@js-temporal/polyfill';
+import { afterEach, vi } from 'vitest';
 import { HomePage } from './home-page';
 
 describe('HomePage', () => {
@@ -10,6 +11,8 @@ describe('HomePage', () => {
   let fixture: ComponentFixture<HomePage>;
 
   beforeEach(async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 0, 31, 23, 59));
     await TestBed.configureTestingModule({
       imports: [HomePage],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
@@ -46,6 +49,100 @@ describe('HomePage', () => {
       ]);
     await fixture.whenStable();
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  describe('across midnight on the same page', () => {
+    function click(selector: string) {
+      (fixture.nativeElement.querySelector(selector) as HTMLButtonElement).click();
+      fixture.detectChanges();
+    }
+
+    function nextDay() {
+      vi.setSystemTime(new Date(2026, 1, 1, 0, 1));
+    }
+
+    beforeEach(() => {
+      for (const dialog of fixture.nativeElement.querySelectorAll('dialog')) {
+        Object.assign(dialog, {
+          close: () => dialog.removeAttribute('open'),
+          showModal: () => dialog.setAttribute('open', ''),
+        });
+      }
+      click('.stop-selector:nth-child(1)');
+      click('.stop-list li:nth-child(2) button');
+      click('.stop-selector:nth-child(2)');
+      click('.stop-list li:nth-child(2) button');
+    });
+
+    it('refreshes the minimum and clears an expired selection when reopened', () => {
+      click('.stop-selector:nth-child(3)');
+      click('[data-date="2026-01-31"]');
+      click('.confirm-button');
+      nextDay();
+      click('.stop-selector:nth-child(3)');
+
+      expect(fixture.nativeElement.querySelector('[data-date="2026-02-01"]').disabled).toBe(false);
+      expect(fixture.nativeElement.querySelector('[aria-label="Mês anterior"]').disabled).toBe(true);
+      expect(fixture.nativeElement.querySelector('.calendar-day.selected')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.confirm-button').disabled).toBe(true);
+      expect(fixture.nativeElement.querySelector('.search-button').disabled).toBe(true);
+      expect(fixture.nativeElement.querySelectorAll('.stop-selector')[2].textContent).toContain(
+        'Selecione a data de embarque',
+      );
+    });
+
+    it('rejects a pending date that expires while the picker stays open', () => {
+      click('.stop-selector:nth-child(3)');
+      click('[data-date="2026-01-31"]');
+      click('.confirm-button');
+      click('.stop-selector:nth-child(3)');
+      nextDay();
+      click('.confirm-button');
+
+      expect(fixture.nativeElement.querySelectorAll('dialog')[1].open).toBe(true);
+      expect(fixture.nativeElement.querySelector('[data-date="2026-01-31"]').disabled).toBe(true);
+      expect(fixture.nativeElement.querySelector('.confirm-button').disabled).toBe(true);
+      expect(fixture.nativeElement.querySelector('.search-button').disabled).toBe(true);
+    });
+
+    it('rejects clicking yesterday in a calendar left open overnight', () => {
+      click('.stop-selector:nth-child(3)');
+      nextDay();
+      click('[data-date="2026-01-31"]');
+
+      expect(fixture.nativeElement.querySelector('[data-date="2026-01-31"]').disabled).toBe(true);
+      expect(fixture.nativeElement.querySelector('.confirm-button').disabled).toBe(true);
+      click('[data-date="2026-02-01"]');
+      click('.confirm-button');
+      expect(fixture.nativeElement.querySelectorAll('dialog')[1].open).toBe(false);
+    });
+
+    it('blocks expired search, then navigates with freshly computed tomorrow and the same params', () => {
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      const navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      click('.stop-selector:nth-child(3)');
+      click('[data-date="2026-01-31"]');
+      click('.confirm-button');
+      nextDay();
+      click('.search-button');
+
+      expect(navigate).not.toHaveBeenCalled();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+      expect(fixture.nativeElement.querySelector('.search-button').disabled).toBe(true);
+      expect(fixture.nativeElement.querySelectorAll('.stop-selector')[2].textContent).toContain(
+        'Selecione a data de embarque',
+      );
+      click('.tomorrow-date');
+      click('.search-button');
+      expect(navigate).toHaveBeenCalledWith(['/passagens'], {
+        queryParams: { from: 'ROD_948', to: 'CIT_940', date: '2026-02-02' },
+      });
+    });
   });
 
   it('selects a destination from the searchable dialog', () => {

@@ -12,9 +12,9 @@ export class DatePickerDialog {
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   readonly selectedDate = input('');
   readonly selected = output<string>();
-  protected readonly minimumDate = Temporal.Now.plainDateISO();
+  protected readonly minimumDate = signal(Temporal.Now.plainDateISO());
   protected readonly pendingDate = signal('');
-  protected readonly activeMonth = signal(this.minimumDate.toPlainYearMonth());
+  protected readonly activeMonth = signal(this.minimumDate().toPlainYearMonth());
   protected readonly monthLabel = computed(() =>
     this.activeMonth().toPlainDate({ day: 1 }).toLocaleString('pt-BR', {
       month: 'long',
@@ -30,21 +30,22 @@ export class DatePickerDialog {
       const date = gridStart.add({ days: index });
       return {
         date,
-        disabled: Temporal.PlainDate.compare(date, this.minimumDate) < 0,
+        disabled: Temporal.PlainDate.compare(date, this.minimumDate()) < 0,
         outsideMonth: date.month !== month.month || date.year !== month.year,
       };
     });
   });
   protected readonly previousMonthDisabled = computed(
-    () => Temporal.PlainYearMonth.compare(this.activeMonth(), this.minimumDate.toPlainYearMonth()) <= 0,
+    () => Temporal.PlainYearMonth.compare(this.activeMonth(), this.minimumDate().toPlainYearMonth()) <= 0,
   );
 
   open() {
     this.pendingDate.set(this.selectedDate());
+    this.refreshMinimumDate();
     this.activeMonth.set(
-      this.selectedDate()
-        ? Temporal.PlainDate.from(this.selectedDate()).toPlainYearMonth()
-        : this.minimumDate.toPlainYearMonth(),
+      this.pendingDate()
+        ? Temporal.PlainDate.from(this.pendingDate()).toPlainYearMonth()
+        : this.minimumDate().toPlainYearMonth(),
     );
     this.dialog().nativeElement.showModal();
   }
@@ -54,6 +55,9 @@ export class DatePickerDialog {
   }
 
   protected choose(date: Temporal.PlainDate) {
+    this.refreshMinimumDate();
+    if (Temporal.PlainDate.compare(date, this.minimumDate()) < 0) return;
+
     this.pendingDate.set(date.toString());
     this.activeMonth.set(date.toPlainYearMonth());
   }
@@ -63,10 +67,22 @@ export class DatePickerDialog {
   }
 
   protected confirm() {
+    this.refreshMinimumDate();
     const date = this.pendingDate();
     if (!date) return;
 
     this.selected.emit(date);
     this.dialog().nativeElement.close();
+  }
+
+  private refreshMinimumDate() {
+    const today = Temporal.Now.plainDateISO();
+    this.minimumDate.set(today);
+    if (this.pendingDate() && Temporal.PlainDate.compare(this.pendingDate(), today) < 0) {
+      this.pendingDate.set('');
+    }
+    if (this.selectedDate() && Temporal.PlainDate.compare(this.selectedDate(), today) < 0) {
+      this.selected.emit('');
+    }
   }
 }
