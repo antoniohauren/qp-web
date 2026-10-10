@@ -92,9 +92,35 @@
     </header>
 
     @if (seatsLoading()) {
-      <section class="seat-status loading" role="status">
-        <span class="skeleton loading-line"></span>
-        Carregando mapa de assentos…
+      <aside class="legend" aria-label="Legenda do mapa">
+        <span><i class="legend-seat available"></i>Disponível</span>
+        <span><i class="legend-seat occupied"></i>Ocupado</span>
+      </aside>
+      <section class="loading-deck" role="status" aria-label="Carregando mapa de assentos">
+        <header class="deck-heading" aria-hidden="true">
+          <span class="front-label">Frente</span>
+          <div>
+            <p>Ônibus</p>
+            <h3>Piso 1</h3>
+          </div>
+        </header>
+        <div class="seat-map" aria-hidden="true">
+          <table>
+            <tbody>
+              @for (row of [1, 2, 3, 4, 5]; track row) {
+                <tr>
+                  @for (seat of [1, 2, 3, 4, 5, 6, 7, 8]; track seat) {
+                    <td>
+                      @if (row !== 3) {
+                        <span class="skeleton skeleton-seat"></span>
+                      }
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </section>
     } @else if (seatsLoadError()) {
       <p class="seat-status status-error" role="alert">Não foi possível carregar os assentos.</p>

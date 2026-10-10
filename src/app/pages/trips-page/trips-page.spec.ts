@@ -59,6 +59,10 @@ describe('TripsPage', () => {
     const seatsRequest = http.expectOne('http://127.0.0.1:8000/api/seats');
     expect(seatsRequest.request.method).toBe('POST');
     expect(seatsRequest.request.body).toEqual({ travelId: 'trip-1' });
+    harness.fixture.detectChanges();
+    expect(dialog.querySelector('.legend')?.textContent).toContain('Disponível');
+    expect(dialog.querySelector('.legend')?.textContent).toContain('Ocupado');
+    expect(dialog.querySelectorAll('.skeleton-seat').length).toBe(32);
     seatsRequest.flush([
       {
         orientation: 'horizontal',

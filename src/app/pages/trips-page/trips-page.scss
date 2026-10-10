@@ -97,7 +97,8 @@ h1 {
 
 .seats-dialog {
   box-sizing: border-box;
-  width: min(760px, calc(100% - 32px));
+  width: min(1000px, calc(100% - 32px));
+  height: min(700px, calc(100dvh - 32px));
   max-height: calc(100dvh - 32px);
   padding: 28px;
   border: 1px solid var(--mat-sys-outline-variant);
@@ -302,15 +303,17 @@ td {
   text-align: center;
 }
 
-.loading {
-  display: grid;
-  justify-items: center;
-  gap: 12px;
+.loading-deck {
+  overflow: hidden;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 24px 12px 12px 24px;
 }
 
-.loading-line {
-  width: min(280px, 80%);
-  height: 18px;
+.skeleton-seat {
+  display: block;
+  width: 44px;
+  height: 44px;
+  border-radius: 11px 11px 7px 7px;
 }
 
 .close-button:focus-visible {
@@ -405,6 +408,7 @@ td {
     width: 100%;
     max-width: none;
     max-height: calc(100dvh - 24px);
+    height: calc(100dvh - 24px);
     margin: auto 0 0;
     padding: 24px 16px;
     border-radius: 24px 24px 0 0;
