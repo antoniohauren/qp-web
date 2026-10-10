@@ -13,4 +13,9 @@ export const routes: Routes = [
     path: 'assentos',
     loadComponent: () => import('./pages/seats-page/seats-page').then(({ SeatsPage }) => SeatsPage),
   },
+  {
+    path: 'checkout',
+    loadComponent: () =>
+      import('./pages/checkout-page/checkout-page').then(({ CheckoutPage }) => CheckoutPage),
+  },
 ];

@@ -71,14 +71,32 @@ describe('TripsPage', () => {
         seats: [
           [
             {
-              seat: '02',
-              position: { x: 2, y: 0, z: 0 },
-              occupied: true,
+              seat: '01',
+              position: { x: 1, y: 0, z: 0 },
+              occupied: false,
               type: 'seat',
             },
             {
-              seat: '01',
-              position: { x: 1, y: 0, z: 0 },
+              seat: '02',
+              position: { x: 2, y: 0, z: 0 },
+              occupied: false,
+              type: 'seat',
+            },
+            {
+              seat: '03',
+              position: { x: 3, y: 0, z: 0 },
+              occupied: false,
+              type: 'seat',
+            },
+            {
+              seat: '04',
+              position: { x: 4, y: 0, z: 0 },
+              occupied: false,
+              type: 'seat',
+            },
+            {
+              seat: '05',
+              position: { x: 5, y: 0, z: 0 },
               occupied: false,
               type: 'seat',
             },
@@ -92,8 +110,22 @@ describe('TripsPage', () => {
     expect(dialog.textContent).toContain('São Paulo, SP - Rodoviária do Tietê');
     expect(dialog.textContent).toContain('Curitiba, PR - Rodoviária');
     expect(dialog.textContent).toContain('1001');
-    expect(
-      Array.from(dialog.querySelectorAll('.seat'), (seat) => seat.textContent?.trim()),
-    ).toEqual(['01', '02']);
+    const seats = dialog.querySelectorAll<HTMLButtonElement>('.seat');
+    expect(Array.from(seats, (seat) => seat.textContent?.trim())).toEqual([
+      '01',
+      '02',
+      '03',
+      '04',
+      '05',
+    ]);
+
+    Array.from(seats)
+      .slice(0, 4)
+      .forEach((seat) => seat.click());
+    harness.fixture.detectChanges();
+
+    expect(dialog.querySelectorAll('.seat.selected').length).toBe(4);
+    expect(seats[4].disabled).toBe(true);
+    expect(dialog.querySelector('.selection-footer')?.textContent).toContain('4 de 4 assentos');
   });
 });

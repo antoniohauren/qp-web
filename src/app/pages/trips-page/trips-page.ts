@@ -1,6 +1,6 @@
 import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { Temporal } from '@js-temporal/polyfill';
 import { Subscription } from 'rxjs';
@@ -23,6 +23,7 @@ export class TripsPage {
   });
   private readonly seatsService = inject(SeatsService);
   private readonly tripsService = inject(TripsService);
+  private readonly router = inject(Router);
   private seatsRequest?: Subscription;
   protected readonly from = computed(() => this.params().get('from') ?? '');
   protected readonly to = computed(() => this.params().get('to') ?? '');
@@ -35,6 +36,8 @@ export class TripsPage {
   protected readonly layouts = signal<SeatsLayout[]>([]);
   protected readonly seatsLoading = signal(false);
   protected readonly seatsLoadError = signal(false);
+  protected readonly selectedSeats = signal<string[]>([]);
+  protected readonly selectionFull = computed(() => this.selectedSeats().length === 4);
   protected readonly dateLabel = computed(() => {
     try {
       return Temporal.PlainDate.from(this.date()).toLocaleString('pt-BR', { dateStyle: 'long' });
@@ -84,6 +87,7 @@ export class TripsPage {
     this.seatsRequest?.unsubscribe();
     this.selectedTrip.set(trip);
     this.layouts.set([]);
+    this.selectedSeats.set([]);
     this.seatsLoadError.set(false);
     this.seatsLoading.set(true);
     this.seatsDialog().nativeElement.showModal();
@@ -110,5 +114,32 @@ export class TripsPage {
     this.seatsRequest?.unsubscribe();
     this.seatsLoading.set(false);
     this.seatsDialog().nativeElement.close();
+  }
+
+  protected toggleSeat(seat: string) {
+    this.selectedSeats.update((selected) => {
+      if (selected.includes(seat)) return selected.filter((item) => item !== seat);
+      return selected.length < 4 ? [...selected, seat] : selected;
+    });
+  }
+
+  protected goToCheckout() {
+    const trip = this.selectedTrip();
+    const seats = this.selectedSeats();
+    if (!trip || !seats.length) return;
+
+    this.closeSeats();
+    void this.router.navigate(['/checkout'], {
+      queryParams: {
+        travelId: trip.id,
+        from: trip.from.name,
+        to: trip.to.name,
+        departure: `${trip.departure.date}T${trip.departure.time}`,
+        company: trip.company.name,
+        seatClass: trip.seatClass,
+        seats: seats.join(','),
+        price: trip.price.price,
+      },
+    });
   }
 }

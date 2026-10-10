@@ -94,6 +94,7 @@
     @if (seatsLoading()) {
       <aside class="legend" aria-label="Legenda do mapa">
         <span><i class="legend-seat available"></i>Disponível</span>
+        <span><i class="legend-seat selected"></i>Selecionado</span>
         <span><i class="legend-seat occupied"></i>Ocupado</span>
       </aside>
       <section class="loading-deck" role="status" aria-label="Carregando mapa de assentos">
@@ -127,6 +128,7 @@
     } @else if (layouts().length) {
       <aside class="legend" aria-label="Legenda do mapa">
         <span><i class="legend-seat available"></i>Disponível</span>
+        <span><i class="legend-seat selected"></i>Selecionado</span>
         <span><i class="legend-seat occupied"></i>Ocupado</span>
       </aside>
 
@@ -154,18 +156,29 @@
                     @for (cell of row; track cell.position.x + '-' + cell.position.y) {
                       <td [class.empty-cell]="cell.type === 'emptyOrReservedSpace' || !cell.seat">
                         @if (cell.type === 'seat' && cell.seat) {
-                          <span
+                          <button
                             class="seat"
                             [class.occupied]="cell.occupied"
-                            role="img"
+                            [class.selected]="selectedSeats().includes(cell.seat)"
+                            type="button"
+                            [disabled]="
+                              cell.occupied ||
+                              (selectionFull() && !selectedSeats().includes(cell.seat))
+                            "
+                            [attr.aria-pressed]="selectedSeats().includes(cell.seat)"
                             [attr.aria-label]="
                               'Assento ' +
                               cell.seat +
-                              (cell.occupied ? ', ocupado' : ', disponível')
+                              (cell.occupied
+                                ? ', ocupado'
+                                : selectedSeats().includes(cell.seat)
+                                  ? ', selecionado'
+                                  : ', disponível')
                             "
+                            (click)="toggleSeat(cell.seat)"
                           >
                             {{ cell.seat }}
-                          </span>
+                          </button>
                         }
                       </td>
                     }
@@ -176,6 +189,27 @@
           </div>
         </section>
       }
+
+      <footer class="selection-footer" aria-live="polite">
+        <div>
+          <strong>{{ selectedSeats().length }} de 4 assentos</strong>
+          <span>
+            @if (selectedSeats().length) {
+              {{ selectedSeats().join(', ') }}
+            } @else {
+              Selecione até quatro lugares
+            }
+          </span>
+        </div>
+        <button
+          class="checkout-button"
+          type="button"
+          [disabled]="!selectedSeats().length"
+          (click)="goToCheckout()"
+        >
+          Ir para pagamento
+        </button>
+      </footer>
     } @else {
       <p class="seat-status" role="status">Nenhum assento encontrado para esta viagem.</p>
     }
