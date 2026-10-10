@@ -35,8 +35,15 @@ h1 {
   font: var(--mat-sys-body-large);
 }
 
+.route-picker {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .route-selectors {
   display: grid;
+  flex: 1;
   gap: 12px;
 }
 
@@ -83,6 +90,73 @@ h1 {
   line-height: 1;
 }
 
+.swap-stops {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 50%;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  cursor: pointer;
+}
+
+.swap-stops:hover {
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--mat-sys-primary) 24%, transparent);
+}
+
+.swap-stops.swap-a,
+.swap-stops.swap-b {
+  animation: swap-spin 520ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.swap-stops.swap-b {
+  animation-name: swap-spin-again;
+}
+
+.swap-stops:focus-visible {
+  outline: 3px solid var(--mat-sys-primary);
+  outline-offset: 3px;
+}
+
+.swap-stops svg {
+  width: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+@keyframes swap-spin {
+  50% {
+    scale: 1.14;
+  }
+
+  100% {
+    rotate: 360deg;
+  }
+}
+
+@keyframes swap-spin-again {
+  50% {
+    scale: 1.14;
+  }
+
+  100% {
+    rotate: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swap-stops.swap-a,
+  .swap-stops.swap-b {
+    animation: none;
+  }
+}
+
 .status {
   padding: 32px;
   border: 1px dashed var(--mat-sys-outline);
@@ -106,5 +180,14 @@ h1 {
 
   .stop-selector {
     padding: 18px;
+  }
+
+  .route-picker {
+    gap: 10px;
+  }
+
+  .swap-stops {
+    width: 46px;
+    height: 46px;
   }
 }

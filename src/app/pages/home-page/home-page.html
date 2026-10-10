@@ -15,21 +15,36 @@
         Não foi possível carregar as cidades. Tente novamente mais tarde.
       </p>
     } @else {
-      <div class="route-selectors">
-        <button class="stop-selector" type="button" (click)="stopDialog.open('origin')">
-          <span>
-            <span class="kind">Origem</span>
-            <strong>{{ selectedStop()?.name ?? 'Selecione seu local de embarque' }}</strong>
-          </span>
-          <span class="selector-arrow" aria-hidden="true">›</span>
-        </button>
+      <div class="route-picker">
+        <div class="route-selectors">
+          <button class="stop-selector" type="button" (click)="stopDialog.open('origin')">
+            <span>
+              <span class="kind">Origem</span>
+              <strong>{{ selectedStop()?.name ?? 'Selecione seu local de embarque' }}</strong>
+            </span>
+            <span class="selector-arrow" aria-hidden="true">›</span>
+          </button>
 
-        <button class="stop-selector" type="button" (click)="stopDialog.open('destination')">
-          <span>
-            <span class="kind">Destino</span>
-            <strong>{{ selectedDestination()?.name ?? 'Selecione seu destino' }}</strong>
-          </span>
-          <span class="selector-arrow" aria-hidden="true">›</span>
+          <button class="stop-selector" type="button" (click)="stopDialog.open('destination')">
+            <span>
+              <span class="kind">Destino</span>
+              <strong>{{ selectedDestination()?.name ?? 'Selecione seu destino' }}</strong>
+            </span>
+            <span class="selector-arrow" aria-hidden="true">›</span>
+          </button>
+        </div>
+
+        <button
+          class="swap-stops"
+          type="button"
+          aria-label="Trocar origem e destino"
+          [class.swap-a]="swapAnimation() === 'swap-a'"
+          [class.swap-b]="swapAnimation() === 'swap-b'"
+          (click)="swapStops()"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="m8 7 3-3-3-3M11 4H6a3 3 0 0 0-3 3v10m13 0-3 3 3 3m-3-3h5a3 3 0 0 0 3-3V7" />
+          </svg>
         </button>
       </div>
     }

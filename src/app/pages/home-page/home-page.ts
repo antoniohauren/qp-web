@@ -20,6 +20,7 @@ export class HomePage {
   protected readonly loading = signal(true);
   protected readonly selectedDestination = signal<StopOption | null>(null);
   protected readonly selectedStop = signal<StopOption | null>(null);
+  protected readonly swapAnimation = signal<'swap-a' | 'swap-b' | null>(null);
 
   constructor() {
     this.stopsService.getStops().subscribe({
@@ -38,5 +39,12 @@ export class HomePage {
     } else {
       this.selectedDestination.set(stop);
     }
+  }
+
+  protected swapStops() {
+    const origin = this.selectedStop();
+    this.selectedStop.set(this.selectedDestination());
+    this.selectedDestination.set(origin);
+    this.swapAnimation.update((animation) => (animation === 'swap-a' ? 'swap-b' : 'swap-a'));
   }
 }

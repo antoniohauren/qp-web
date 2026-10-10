@@ -15,7 +15,7 @@ describe('HomePage', () => {
 
     const station = {
       id: 'ROD_948',
-      name: 'Batayporã, MS',
+      name: 'Rodoviária de Batayporã, MS',
       url: 'bataipora-ms',
       type: 'station' as const,
       sub_type: null,
@@ -81,6 +81,29 @@ describe('HomePage', () => {
 
     const options = fixture.nativeElement.querySelectorAll('.stop-list button');
     expect(options).toHaveLength(1);
+  });
+
+  it('swaps the origin and destination', () => {
+    const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    Object.assign(dialog, {
+      close: () => dialog.removeAttribute('open'),
+      showModal: () => dialog.setAttribute('open', ''),
+    });
+    const selectors = fixture.nativeElement.querySelectorAll('.stop-selector');
+
+    (selectors[0] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelectorAll('.stop-list button')[0] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (selectors[1] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.stop-list button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.swap-stops') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(selectors[0].textContent).toContain('Rodoviária de Batayporã, MS');
+    expect(selectors[1].textContent).toContain('Batayporã, MS');
   });
 
   it('highlights the selection for the current field', () => {
