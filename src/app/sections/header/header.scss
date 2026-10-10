@@ -1,0 +1,32 @@
+:host {
+  display: block;
+}
+
+header {
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.header-content {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  min-height: 72px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.logo {
+  color: var(--mat-sys-primary);
+  font: var(--mat-sys-title-large);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+@media (max-width: 600px) {
+  .header-content {
+    min-height: 64px;
+    padding: 0 16px;
+  }
+}
