@@ -35,13 +35,13 @@
     <span>Sáb</span>
   </div>
 
-  <div class="calendar-grid" role="grid" aria-label="Calendário">
+  <div class="calendar-grid" role="group" aria-label="Calendário">
     @for (day of calendarDays(); track day.date.toString()) {
       <button
         class="calendar-day"
         type="button"
         [attr.aria-label]="day.date.toLocaleString('pt-BR', { dateStyle: 'long' })"
-        [attr.aria-selected]="isSelected(day.date)"
+        [attr.aria-pressed]="isSelected(day.date)"
         [attr.data-date]="day.date.toString()"
         [class.outside-month]="day.outsideMonth"
         [class.selected]="isSelected(day.date)"

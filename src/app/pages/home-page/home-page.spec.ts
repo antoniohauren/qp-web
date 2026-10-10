@@ -260,8 +260,15 @@ describe('HomePage', () => {
       '.calendar-day:not(:disabled):not(.outside-month)',
     ) as HTMLButtonElement;
     const selectedDate = day.dataset['date']!;
+    const calendar = day.parentElement!;
+    expect(calendar.getAttribute('role')).toBe('group');
+    expect(calendar.getAttribute('aria-label')).toBe('Calendário');
+    expect(calendar.querySelector('[aria-selected]')).toBeNull();
+    expect(day.getAttribute('aria-pressed')).toBe('false');
     day.click();
     fixture.detectChanges();
+    expect(day.getAttribute('aria-pressed')).toBe('true');
+    expect(calendar.querySelectorAll('button[aria-pressed="true"]')).toHaveLength(1);
     (fixture.nativeElement.querySelector('.confirm-button') as HTMLButtonElement).click();
     fixture.detectChanges();
 
