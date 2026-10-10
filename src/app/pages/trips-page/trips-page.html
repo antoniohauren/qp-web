@@ -3,33 +3,51 @@
 <main>
   <header class="page-heading">
     <p class="eyebrow">Sua viagem</p>
-    <h1>Confira os dados da busca</h1>
-    <p>Origem, destino e data reunidos antes de escolher sua passagem.</p>
+    <h1>{{ dateLabel() }}</h1>
   </header>
 
   @if (complete()) {
-    <section class="trip-card" aria-labelledby="route-heading">
-      <div class="route-line" aria-hidden="true">
-        <span></span>
-        <i></i>
-        <span></span>
-      </div>
+    @if (loading()) {
+      <p class="status" role="status">Buscando viagens...</p>
+    } @else if (loadError()) {
+      <p class="status status-error" role="alert">Não foi possível carregar as viagens.</p>
+    } @else if (trips().length) {
+      <section class="results" aria-labelledby="results-heading">
+        <h2 id="results-heading">{{ trips().length }} viagens encontradas</h2>
 
-      <div class="place">
-        <span>Origem</span>
-        <h2 id="route-heading">{{ from() }}</h2>
-      </div>
-
-      <div class="place destination">
-        <span>Destino</span>
-        <strong>{{ to() }}</strong>
-      </div>
-
-      <div class="travel-date">
-        <span>Data da viagem</span>
-        <strong>{{ dateLabel() }}</strong>
-      </div>
-    </section>
+        @for (trip of trips(); track trip.id) {
+          <article class="trip-card">
+            <div class="trip-detail">
+              <span>Saída</span>
+              <strong>{{ formatDateTime(trip.departure) }}</strong>
+              <small>{{ trip.from.name }}</small>
+            </div>
+            <div class="trip-detail">
+              <span>Chegada</span>
+              <strong>{{ formatDateTime(trip.arrival) }}</strong>
+              <small>{{ trip.to.name }}</small>
+            </div>
+            <div class="trip-detail duration">
+              <span>Duração</span>
+              <strong>{{ formatDuration(trip.travelDuration) }}</strong>
+            </div>
+            <div class="trip-detail price">
+              <span>Preço</span>
+              <strong>{{ formatPrice(trip.price.price) }}</strong>
+            </div>
+            <button
+              type="button"
+              class="choose-button"
+              [attr.aria-label]="'Escolher viagem com saída às ' + trip.departure.time.slice(0, 5)"
+            >
+              Escolher
+            </button>
+          </article>
+        }
+      </section>
+    } @else {
+      <p class="status" role="status">Nenhuma viagem encontrada para esta busca.</p>
+    }
   } @else {
     <p class="status" role="alert">
       Dados da viagem incompletos. Volte e selecione origem, destino e data.
