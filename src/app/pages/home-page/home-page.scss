@@ -77,6 +77,17 @@ h1 {
   outline-offset: 3px;
 }
 
+.stop-selector:disabled,
+.route-action:disabled {
+  cursor: default;
+}
+
+.stop-selector:disabled:hover {
+  border-color: var(--mat-sys-outline-variant);
+  box-shadow: none;
+  transform: none;
+}
+
 .stop-selector strong {
   display: block;
   margin-top: 5px;
@@ -180,6 +191,18 @@ h1 {
 
 .search-button mat-icon {
   transition: transform 160ms ease;
+}
+
+.loading .selector-arrow,
+.loading .route-action,
+.loading .search-button {
+  opacity: 0.45;
+}
+
+.skeleton-input {
+  width: min(240px, 45vw);
+  height: 28px;
+  margin-top: 5px;
 }
 
 .search-button:not(:disabled):hover mat-icon {

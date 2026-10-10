@@ -36,4 +36,23 @@ body {
   margin: 0;
   height: 100%;
 }
+
+.skeleton {
+  display: block;
+  border-radius: 6px;
+  background: var(--mat-sys-surface-container-high);
+  animation: skeleton-pulse 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes skeleton-pulse {
+  to {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
 /* You can add global styles to this file, and also import other style files */

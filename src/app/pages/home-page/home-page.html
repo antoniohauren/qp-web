@@ -8,35 +8,65 @@
   </header>
 
   <section aria-labelledby="stops-heading">
-    @if (loading()) {
-      <p class="status" role="status">Carregando cidades e estações...</p>
-    } @else if (loadError()) {
+    @if (loadError()) {
       <p class="status status-error" role="alert">
         Não foi possível carregar as cidades. Tente novamente mais tarde.
       </p>
     } @else {
-      <div class="route-picker">
+      <div
+        class="route-picker"
+        [class.loading]="loading()"
+        [attr.aria-busy]="loading()"
+        [attr.aria-label]="loading() ? 'Carregando cidades e estações' : null"
+      >
         <div class="route-selectors">
-          <button class="stop-selector" type="button" (click)="stopDialog.open('origin')">
+          <button
+            class="stop-selector"
+            type="button"
+            [disabled]="loading()"
+            (click)="stopDialog.open('origin')"
+          >
             <span>
               <span class="kind">Origem</span>
-              <strong>{{ selectedStop()?.name ?? 'Selecione local' }}</strong>
+              @if (loading()) {
+                <span class="skeleton skeleton-input"></span>
+              } @else {
+                <strong>{{ selectedStop()?.name ?? 'Selecione local' }}</strong>
+              }
             </span>
             <span class="selector-arrow" aria-hidden="true">›</span>
           </button>
 
-          <button class="stop-selector" type="button" (click)="stopDialog.open('destination')">
+          <button
+            class="stop-selector"
+            type="button"
+            [disabled]="loading()"
+            (click)="stopDialog.open('destination')"
+          >
             <span>
               <span class="kind">Destino</span>
-              <strong>{{ selectedDestination()?.name ?? 'Selecione local' }}</strong>
+              @if (loading()) {
+                <span class="skeleton skeleton-input"></span>
+              } @else {
+                <strong>{{ selectedDestination()?.name ?? 'Selecione local' }}</strong>
+              }
             </span>
             <span class="selector-arrow" aria-hidden="true">›</span>
           </button>
 
-          <button class="stop-selector" type="button" (click)="dateDialog.open()">
+          <button
+            class="stop-selector"
+            type="button"
+            [disabled]="loading()"
+            (click)="dateDialog.open()"
+          >
             <span>
               <span class="kind">Data da viagem</span>
-              <strong>{{ selectedDateLabel() }}</strong>
+              @if (loading()) {
+                <span class="skeleton skeleton-input"></span>
+              } @else {
+                <strong>{{ selectedDateLabel() }}</strong>
+              }
             </span>
             <span class="selector-arrow" aria-hidden="true">›</span>
           </button>
@@ -46,6 +76,7 @@
           class="route-action swap-stops"
           type="button"
           aria-label="Trocar origem e destino"
+          [disabled]="loading()"
           [class.swap-a]="swapAnimation() === 'swap-a'"
           [class.swap-b]="swapAnimation() === 'swap-b'"
           (click)="swapStops()"
@@ -60,6 +91,7 @@
           type="button"
           aria-label="Selecionar amanhã"
           title="Amanhã"
+          [disabled]="loading()"
           (click)="selectTomorrow()"
         >
           <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -71,7 +103,7 @@
         <button
           class="search-button"
           type="button"
-          [disabled]="searchDisabled()"
+          [disabled]="loading() || searchDisabled()"
           [routerLink]="['/passagens']"
           [queryParams]="{
             from: selectedStop()?.id,

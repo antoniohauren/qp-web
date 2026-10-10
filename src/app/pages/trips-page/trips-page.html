@@ -8,7 +8,27 @@
 
   @if (complete()) {
     @if (loading()) {
-      <p class="status" role="status">Buscando viagens...</p>
+      <section class="results skeleton-results" role="status" aria-label="Buscando viagens">
+        <span class="skeleton skeleton-heading"></span>
+        @for (item of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track item) {
+          <article class="trip-card skeleton-card" aria-hidden="true">
+            @for (detail of [1, 2, 3, 4]; track detail) {
+              <div
+                class="trip-detail"
+                [class.duration]="detail === 3"
+                [class.price]="detail === 4"
+              >
+                <span class="skeleton skeleton-label"></span>
+                <span class="skeleton skeleton-value"></span>
+                @if (detail <= 2) {
+                  <span class="skeleton skeleton-detail"></span>
+                }
+              </div>
+            }
+            <span class="skeleton skeleton-button"></span>
+          </article>
+        }
+      </section>
     } @else if (loadError()) {
       <p class="status status-error" role="alert">Não foi possível carregar as viagens.</p>
     } @else if (trips().length) {
