@@ -36,19 +36,19 @@ h1 {
 }
 
 .route-picker {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 16px;
+  row-gap: 12px;
 }
 
 .route-selectors {
-  display: grid;
-  flex: 1;
-  gap: 12px;
+  display: contents;
 }
 
 .stop-selector {
   display: flex;
+  grid-column: 1;
   width: 100%;
   align-items: center;
   justify-content: space-between;
@@ -90,8 +90,10 @@ h1 {
   line-height: 1;
 }
 
-.swap-stops {
+.route-action {
   display: grid;
+  grid-column: 2;
+  align-self: center;
   width: 52px;
   height: 52px;
   flex: none;
@@ -103,8 +105,16 @@ h1 {
   cursor: pointer;
 }
 
-.swap-stops:hover {
+.route-action:hover {
   box-shadow: 0 8px 20px color-mix(in srgb, var(--mat-sys-primary) 24%, transparent);
+}
+
+.swap-stops {
+  grid-row: 1 / span 2;
+}
+
+.tomorrow-date {
+  grid-row: 3;
 }
 
 .swap-stops.swap-a,
@@ -116,12 +126,12 @@ h1 {
   animation-name: swap-spin-again;
 }
 
-.swap-stops:focus-visible {
+.route-action:focus-visible {
   outline: 3px solid var(--mat-sys-primary);
   outline-offset: 3px;
 }
 
-.swap-stops svg {
+.route-action svg {
   width: 26px;
   fill: none;
   stroke: currentColor;
@@ -183,10 +193,10 @@ h1 {
   }
 
   .route-picker {
-    gap: 10px;
+    column-gap: 10px;
   }
 
-  .swap-stops {
+  .route-action {
     width: 46px;
     height: 46px;
   }

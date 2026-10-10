@@ -50,6 +50,10 @@ export class HomePage {
     }
   }
 
+  protected selectTomorrow() {
+    this.selectedDate.set(Temporal.Now.plainDateISO().add({ days: 1 }).toString());
+  }
+
   protected swapStops() {
     const origin = this.selectedStop();
     this.selectedStop.set(this.selectedDestination());

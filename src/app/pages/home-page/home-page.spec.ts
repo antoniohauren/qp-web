@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Temporal } from '@js-temporal/polyfill';
 import { HomePage } from './home-page';
 
 describe('HomePage', () => {
@@ -164,5 +165,16 @@ describe('HomePage', () => {
     );
     expect(selectors[2].textContent).toContain(expectedLabel);
     expect(dialog.hasAttribute('open')).toBe(false);
+  });
+
+  it('selects tomorrow from the date shortcut', () => {
+    const tomorrow = Temporal.Now.plainDateISO().add({ days: 1 });
+
+    (fixture.nativeElement.querySelector('.tomorrow-date') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.stop-selector')[2].textContent).toContain(
+      tomorrow.toLocaleString('pt-BR', { dateStyle: 'long' }),
+    );
   });
 });
