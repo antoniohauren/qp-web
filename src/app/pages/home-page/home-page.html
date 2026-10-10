@@ -3,8 +3,8 @@
 <main>
   <header class="page-heading">
     <p class="eyebrow">Rede rodoviária</p>
-    <h1 id="stops-heading">Cidades e estações</h1>
-    <p>Encontre cada cidade e os pontos de embarque próximos a ela.</p>
+    <h1 id="stops-heading">Escolha seu embarque</h1>
+    <p>Busque uma cidade ou estação para começar sua viagem.</p>
   </header>
 
   <section aria-labelledby="stops-heading">
@@ -15,40 +15,68 @@
         Não foi possível carregar as cidades. Tente novamente mais tarde.
       </p>
     } @else {
-      <ul class="city-list">
-        @for (city of cities(); track city.id) {
-          <li class="city">
-            <div class="city-summary">
-              <div>
-                <span class="kind">Cidade</span>
-                <h2>{{ city.name }}</h2>
-              </div>
-              <span class="availability" [class.available]="city.available">
-                {{ city.available ? 'Disponível' : 'Indisponível' }}
-              </span>
-            </div>
+      <div class="route-selectors">
+        <button class="stop-selector" type="button" (click)="openSelector(stopDialog, 'origin')">
+          <span>
+            <span class="kind">Origem</span>
+            <strong>{{ selectedStop()?.name ?? 'Selecione seu local de embarque' }}</strong>
+          </span>
+          <span class="selector-arrow" aria-hidden="true">›</span>
+        </button>
 
-            @if (city.substops?.length) {
-              <div class="stations">
-                <h3>Estações</h3>
-                <ul>
-                  @for (station of city.substops; track station.id) {
-                    <li>
-                      <span class="station-marker" aria-hidden="true"></span>
-                      <span>
-                        <span class="kind">Estação</span>
-                        <strong>{{ station.name }}</strong>
-                      </span>
-                    </li>
-                  }
-                </ul>
-              </div>
-            }
-          </li>
-        } @empty {
-          <li class="status">Nenhuma cidade encontrada.</li>
-        }
-      </ul>
+        <button class="stop-selector" type="button" (click)="openSelector(stopDialog, 'destination')">
+          <span>
+            <span class="kind">Destino</span>
+            <strong>{{ selectedDestination()?.name ?? 'Selecione seu destino' }}</strong>
+          </span>
+          <span class="selector-arrow" aria-hidden="true">›</span>
+        </button>
+      </div>
     }
   </section>
 </main>
+
+<dialog #stopDialog aria-labelledby="selector-title">
+  <div class="dialog-heading">
+    <div>
+      <span class="eyebrow">Local de embarque</span>
+      <h2 id="selector-title">
+        {{ selectionField() === 'origin' ? 'Onde começa sua viagem?' : 'Para onde você vai?' }}
+      </h2>
+    </div>
+    <button class="close-button" type="button" aria-label="Fechar" (click)="stopDialog.close()">
+      ×
+    </button>
+  </div>
+
+  <label for="stop-search">Buscar cidade ou estação</label>
+  <input
+    #searchInput
+    id="stop-search"
+    type="search"
+    autocomplete="off"
+    placeholder="Digite para buscar"
+    [value]="searchQuery()"
+    (input)="searchQuery.set(searchInput.value)"
+  />
+
+  <p class="result-count" aria-live="polite">
+    {{ filteredStops().length }} {{ filteredStops().length === 1 ? 'local encontrado' : 'locais encontrados' }}
+  </p>
+
+  <ul class="stop-list">
+    @for (stop of filteredStops(); track stop.id) {
+      <li>
+        <button type="button" (click)="selectStop(stop, stopDialog)">
+          <span class="stop-marker" aria-hidden="true"></span>
+          <span>
+            <span class="kind">{{ stop.type === 'city' ? 'Cidade' : 'Estação' }}</span>
+            <strong>{{ stop.name }}</strong>
+          </span>
+        </button>
+      </li>
+    } @empty {
+      <li class="empty-result">Nenhum local corresponde à busca.</li>
+    }
+  </ul>
+</dialog>

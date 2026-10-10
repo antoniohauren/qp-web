@@ -39,9 +39,28 @@ describe('HomePage', () => {
     fixture.detectChanges();
   });
 
-  it('shows stations near their city', () => {
+  it('selects a destination from the searchable dialog', () => {
     expect(component).toBeTruthy();
-    expect(fixture.nativeElement.textContent).toContain('Batayporã, MS');
-    expect(fixture.nativeElement.textContent).toContain('Estações');
+    const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    Object.assign(dialog, {
+      close: () => dialog.removeAttribute('open'),
+      showModal: () => dialog.setAttribute('open', ''),
+    });
+
+    const selectors = fixture.nativeElement.querySelectorAll('.stop-selector');
+    (selectors[1] as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const search = fixture.nativeElement.querySelector('#stop-search') as HTMLInputElement;
+    search.value = 'bataypora';
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.stop-list button')).toHaveLength(2);
+    (fixture.nativeElement.querySelectorAll('.stop-list button')[1] as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(selectors[0].textContent).toContain('Selecione seu local de embarque');
+    expect(selectors[1].textContent).toContain('Batayporã, MS');
   });
 });
