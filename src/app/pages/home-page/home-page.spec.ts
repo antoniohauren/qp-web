@@ -2,7 +2,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { Temporal } from '@js-temporal/polyfill';
 import { afterEach, vi } from 'vitest';
 import { HomePage } from './home-page';
 
@@ -122,7 +121,7 @@ describe('HomePage', () => {
       expect(fixture.nativeElement.querySelectorAll('dialog')[1].open).toBe(false);
     });
 
-    it('blocks expired search, then navigates with freshly computed tomorrow and the same params', () => {
+    it('blocks expired search, then navigates with a newly selected date and the same params', () => {
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
       const navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
       click('.stop-selector:nth-child(3)');
@@ -137,7 +136,9 @@ describe('HomePage', () => {
       expect(fixture.nativeElement.querySelectorAll('.stop-selector')[2].textContent).toContain(
         'Selecione a data de embarque',
       );
-      click('.tomorrow-date');
+      click('.stop-selector:nth-child(3)');
+      click('[data-date="2026-02-02"]');
+      click('.confirm-button');
       click('.search-button');
       expect(navigate).toHaveBeenCalledWith(['/passagens'], {
         queryParams: { from: 'ROD_948', to: 'CIT_940', date: '2026-02-02' },
@@ -300,23 +301,14 @@ describe('HomePage', () => {
     expect(dialog.hasAttribute('open')).toBe(false);
   });
 
-  it('selects tomorrow from the date shortcut', () => {
-    const tomorrow = Temporal.Now.plainDateISO().add({ days: 1 });
-
-    (fixture.nativeElement.querySelector('.tomorrow-date') as HTMLButtonElement).click();
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.querySelectorAll('.stop-selector')[2].textContent).toContain(
-      tomorrow.toLocaleString('pt-BR', { dateStyle: 'long' }),
-    );
-  });
-
   it('enables search only for complete, available routes', () => {
     const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
-    Object.assign(dialog, {
-      close: () => dialog.removeAttribute('open'),
-      showModal: () => dialog.setAttribute('open', ''),
-    });
+    for (const picker of fixture.nativeElement.querySelectorAll('dialog')) {
+      Object.assign(picker, {
+        close: () => picker.removeAttribute('open'),
+        showModal: () => picker.setAttribute('open', ''),
+      });
+    }
     const selectors = fixture.nativeElement.querySelectorAll('.stop-selector');
     const searchButton = fixture.nativeElement.querySelector('.search-button') as HTMLButtonElement;
 
@@ -333,7 +325,11 @@ describe('HomePage', () => {
     fixture.detectChanges();
     (fixture.nativeElement.querySelectorAll('.stop-list button')[1] as HTMLButtonElement).click();
     fixture.detectChanges();
-    (fixture.nativeElement.querySelector('.tomorrow-date') as HTMLButtonElement).click();
+    (selectors[2] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('[data-date="2026-01-31"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.confirm-button') as HTMLButtonElement).click();
     fixture.detectChanges();
 
     expect(searchButton.disabled).toBe(false);

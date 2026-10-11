@@ -64,10 +64,6 @@ export class HomePage {
     }
   }
 
-  protected selectTomorrow() {
-    this.selectedDate.set(Temporal.Now.plainDateISO().add({ days: 1 }).toString());
-  }
-
   protected search() {
     const date = this.selectedDate();
     if (date && Temporal.PlainDate.compare(date, Temporal.Now.plainDateISO()) < 0) {
