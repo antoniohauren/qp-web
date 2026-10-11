@@ -16,7 +16,10 @@ describe('TripsPage', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideRouter([{ path: 'passagens', component: TripsPage }]),
+        provideRouter([
+          { path: 'passagens', component: TripsPage },
+          { path: 'checkout', component: CheckoutPage },
+        ]),
       ],
     });
     Object.assign(globalThis, { API_URL: 'http://127.0.0.1:8000' });
@@ -61,6 +64,7 @@ describe('TripsPage', () => {
       close: () => dialog.removeAttribute('open'),
     });
     harness.routeNativeElement?.querySelector<HTMLButtonElement>('.choose-button')?.click();
+    harness.fixture.detectChanges();
     const seatsRequest = http.expectOne('http://127.0.0.1:8000/api/seats');
     expect(seatsRequest.request.method).toBe('POST');
     expect(seatsRequest.request.body).toEqual({ travelId: 'trip-1' });
@@ -132,6 +136,49 @@ describe('TripsPage', () => {
     expect(dialog.querySelectorAll('.seat.selected').length).toBe(4);
     expect(seats[4].disabled).toBe(true);
     expect(dialog.querySelector('.selection-footer')?.textContent).toContain('4 de 4 assentos');
+
+    dialog.querySelector<HTMLButtonElement>('.close-button')!.click();
+    harness.detectChanges();
+    expect(dialog.querySelector('app-seat-selector')).toBeNull();
+
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.choose-button')!.click();
+    harness.detectChanges();
+    const cancelledRequest = http.expectOne('http://127.0.0.1:8000/api/seats');
+    dialog.dispatchEvent(new Event('cancel'));
+    harness.detectChanges();
+    expect(cancelledRequest.cancelled).toBe(true);
+    expect(dialog.open).toBe(false);
+
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.choose-button')!.click();
+    harness.detectChanges();
+    http.expectOne('http://127.0.0.1:8000/api/seats').flush([
+      {
+        orientation: 'horizontal',
+        floor: 0,
+        seatsLayout: 'numbered',
+        seats: [[{ seat: '01', position: { x: 1, y: 0, z: 0 }, occupied: false, type: 'seat' }]],
+      },
+    ]);
+    harness.detectChanges();
+    expect(dialog.querySelectorAll('.seat.selected')).toHaveLength(0);
+    expect(dialog.querySelector<HTMLButtonElement>('.checkout-button')!.disabled).toBe(true);
+    dialog.querySelector<HTMLButtonElement>('.seat')!.click();
+    harness.detectChanges();
+    dialog.querySelector<HTMLButtonElement>('.checkout-button')!.click();
+    await harness.fixture.whenStable();
+
+    const router = TestBed.inject(Router);
+    expect(router.parseUrl(router.url).queryParams).toEqual({
+      travelId: 'trip-1',
+      from: 'São Paulo, SP - Rodoviária do Tietê',
+      to: 'Curitiba, PR - Rodoviária',
+      departure: '2026-10-11T08:30:00',
+      company: '1001',
+      seatClass: 'EXECUTIVO',
+      seats: '01',
+      price: '79.9',
+    });
+    http.verify();
   });
 
   it('uses the seat page on mobile and carries the selection and fare to checkout', async () => {

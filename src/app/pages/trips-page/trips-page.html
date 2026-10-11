@@ -72,7 +72,7 @@
   }
 </main>
 
-<dialog #seatsDialog class="seats-dialog" aria-labelledby="seats-title">
+<dialog #seatsDialog class="seats-dialog" aria-labelledby="seats-title" (cancel)="closeSeats()">
   @if (selectedTrip(); as trip) {
     <header class="dialog-heading">
       <div>
@@ -91,127 +91,11 @@
       </button>
     </header>
 
-    @if (seatsLoading()) {
-      <aside class="legend" aria-label="Legenda do mapa">
-        <span><i class="legend-seat available"></i>Disponível</span>
-        <span><i class="legend-seat selected"></i>Selecionado</span>
-        <span><i class="legend-seat occupied"></i>Ocupado</span>
-      </aside>
-      <section class="loading-deck" role="status" aria-label="Carregando mapa de assentos">
-        <header class="deck-heading" aria-hidden="true">
-          <span class="front-label">Frente</span>
-          <div>
-            <p>Ônibus</p>
-            <h3>Piso 1</h3>
-          </div>
-        </header>
-        <div class="seat-map" aria-hidden="true">
-          <table>
-            <tbody>
-              @for (row of [1, 2, 3, 4, 5]; track row) {
-                <tr>
-                  @for (seat of [1, 2, 3, 4, 5, 6, 7, 8]; track seat) {
-                    <td>
-                      @if (row !== 3) {
-                        <span class="skeleton skeleton-seat"></span>
-                      }
-                    </td>
-                  }
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </section>
-    } @else if (seatsLoadError()) {
-      <p class="seat-status status-error" role="alert">Não foi possível carregar os assentos.</p>
-    } @else if (layouts().length) {
-      <aside class="legend" aria-label="Legenda do mapa">
-        <span><i class="legend-seat available"></i>Disponível</span>
-        <span><i class="legend-seat selected"></i>Selecionado</span>
-        <span><i class="legend-seat occupied"></i>Ocupado</span>
-      </aside>
-
-      @for (layout of layouts(); track layout.floor) {
-        <section class="deck" [attr.aria-labelledby]="'floor-' + layout.floor">
-          <header class="deck-heading">
-            <span class="front-label">Frente</span>
-            <div>
-              <p>Ônibus</p>
-              <h3 [id]="'floor-' + layout.floor">Piso {{ layout.floor + 1 }}</h3>
-            </div>
-          </header>
-
-          <div class="seat-map">
-            <table>
-              <caption>
-                Mapa de assentos do piso
-                {{
-                  layout.floor + 1
-                }}
-              </caption>
-              <tbody>
-                @for (row of layout.seats; track $index) {
-                  <tr>
-                    @for (cell of row; track cell.position.x + '-' + cell.position.y) {
-                      <td [class.empty-cell]="cell.type === 'emptyOrReservedSpace' || !cell.seat">
-                        @if (cell.type === 'seat' && cell.seat) {
-                          <button
-                            class="seat"
-                            [class.occupied]="cell.occupied"
-                            [class.selected]="selectedSeats().includes(cell.seat)"
-                            type="button"
-                            [disabled]="
-                              cell.occupied ||
-                              (selectionFull() && !selectedSeats().includes(cell.seat))
-                            "
-                            [attr.aria-pressed]="selectedSeats().includes(cell.seat)"
-                            [attr.aria-label]="
-                              'Assento ' +
-                              cell.seat +
-                              (cell.occupied
-                                ? ', ocupado'
-                                : selectedSeats().includes(cell.seat)
-                                  ? ', selecionado'
-                                  : ', disponível')
-                            "
-                            (click)="toggleSeat(cell.seat)"
-                          >
-                            {{ cell.seat }}
-                          </button>
-                        }
-                      </td>
-                    }
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </section>
-      }
-
-      <footer class="selection-footer" aria-live="polite">
-        <div>
-          <strong>{{ selectedSeats().length }} de 4 assentos</strong>
-          <span>
-            @if (selectedSeats().length) {
-              {{ selectedSeats().join(', ') }}
-            } @else {
-              Selecione até quatro lugares
-            }
-          </span>
-        </div>
-        <button
-          class="checkout-button"
-          type="button"
-          [disabled]="!selectedSeats().length"
-          (click)="goToCheckout()"
-        >
-          Ir para pagamento
-        </button>
-      </footer>
-    } @else {
-      <p class="seat-status" role="status">Nenhum assento encontrado para esta viagem.</p>
-    }
+    <app-seat-selector
+      class="dialog"
+      [travelId]="trip.id"
+      [headingLevel]="3"
+      (checkout)="goToCheckout($event)"
+    />
   }
 </dialog>
