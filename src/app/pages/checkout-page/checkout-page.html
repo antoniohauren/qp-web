@@ -1,0 +1,56 @@
+<app-header />
+
+<main>
+  <header class="page-heading">
+    <h1>Revise sua viagem</h1>
+    <p>Nenhuma cobrança será realizada nesta página.</p>
+  </header>
+
+  @if (complete()) {
+    <div class="checkout-grid">
+      <section class="trip-card" aria-labelledby="trip-heading">
+        <p class="card-label">Seu itinerário</p>
+        <h2 id="trip-heading">{{ from() }} <span>para</span> {{ to() }}</h2>
+        <dl>
+          <div>
+            <dt>Embarque</dt>
+            <dd>{{ departure() }}</dd>
+          </div>
+          <div>
+            <dt>Empresa</dt>
+            <dd>{{ company() }}</dd>
+          </div>
+          <div>
+            <dt>Categoria</dt>
+            <dd>{{ seatClass() }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <aside class="order-card" aria-labelledby="order-heading">
+        <p class="card-label">Resumo</p>
+        <h2 id="order-heading">{{ seats().length }} passagem(ns)</h2>
+        <div class="seat-list" aria-label="Assentos selecionados">
+          @for (seat of seats(); track seat) {
+            <span>{{ seat }}</span>
+          }
+        </div>
+        <div class="total">
+          <span>Total</span><strong>{{ total() }}</strong>
+        </div>
+        <button type="button" (click)="finished.set(true)">Finalizar compra</button>
+        @if (finished()) {
+          <p class="success" role="status">
+            Reserva simulada com sucesso. Nenhum pagamento foi feito.
+          </p>
+        }
+      </aside>
+    </div>
+  } @else {
+    <section class="empty" role="alert">
+      <h2>Checkout vazio</h2>
+      <p>Escolha uma viagem e seus assentos antes de continuar.</p>
+      <a routerLink="/">Buscar passagens</a>
+    </section>
+  }
+</main>
