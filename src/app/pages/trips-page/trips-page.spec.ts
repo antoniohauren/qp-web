@@ -1,11 +1,16 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { afterEach, vi } from 'vitest';
+import { CheckoutPage } from '../checkout-page/checkout-page';
+import { SeatsPage } from '../seats-page/seats-page';
 import { TripsPage } from './trips-page';
 
 describe('TripsPage', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
   it('renders trips returned for the route', async () => {
     TestBed.configureTestingModule({
       providers: [
@@ -127,5 +132,110 @@ describe('TripsPage', () => {
     expect(dialog.querySelectorAll('.seat.selected').length).toBe(4);
     expect(seats[4].disabled).toBe(true);
     expect(dialog.querySelector('.selection-footer')?.textContent).toContain('4 de 4 assentos');
+  });
+
+  it('uses the seat page on mobile and carries the selection and fare to checkout', async () => {
+    const matchMedia = vi.fn().mockReturnValue({ matches: true });
+    vi.stubGlobal('matchMedia', matchMedia);
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([
+          { path: 'passagens', component: TripsPage },
+          { path: 'assentos', component: SeatsPage },
+          { path: 'checkout', component: CheckoutPage },
+        ]),
+      ],
+    });
+    Object.assign(globalThis, { API_URL: 'http://127.0.0.1:8000' });
+    const harness = await RouterTestingHarness.create(
+      '/passagens?from=ROD_948&to=CIT_940&date=2026-10-11',
+    );
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne('http://127.0.0.1:8000/api/search/ROD_948/CIT_940/2026-10-11').flush([
+      {
+        id: 'trip-1',
+        company: { id: '2', name: '1001' },
+        from: { name: 'São Paulo, SP' },
+        to: { name: 'Curitiba, PR' },
+        departure: { date: '2026-10-11', time: '08:30:00' },
+        arrival: { date: '2026-10-11', time: '14:45:00' },
+        travelDuration: 22500,
+        seatClass: 'EXECUTIVO',
+        price: { price: 79.9 },
+      },
+    ]);
+    harness.detectChanges();
+    const dialog = harness.routeNativeElement!.querySelector<HTMLDialogElement>('dialog')!;
+    const showModal = vi.fn();
+    Object.assign(dialog, { showModal });
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>('.choose-button')!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    expect(matchMedia).toHaveBeenCalledWith('(max-width: 720px)');
+    expect(showModal).not.toHaveBeenCalled();
+    expect(TestBed.inject(Router).url).toContain('/assentos?');
+    const page = harness.routeNativeElement!;
+    expect(page.querySelector('.back-link')?.getAttribute('href')).toBe(
+      '/passagens?from=ROD_948&to=CIT_940&date=2026-10-11',
+    );
+    expect(page.textContent).toContain('Carregando mapa de assentos');
+    const request = http.expectOne('http://127.0.0.1:8000/api/seats');
+    expect(request.request.body).toEqual({ travelId: 'trip-1' });
+    request.flush(
+      [0, 1].map((floor) => ({
+        orientation: 'horizontal',
+        floor,
+        seatsLayout: 'numbered',
+        seats: [
+          [1, 2, 3].map((number) => ({
+            seat: String(floor * 3 + number).padStart(2, '0'),
+            position: { x: number, y: 0, z: floor },
+            occupied: floor === 1 && number === 3,
+            type: 'seat',
+          })),
+        ],
+      })),
+    );
+    harness.detectChanges();
+    const seats = page.querySelectorAll<HTMLButtonElement>('.seat');
+    const checkout = page.querySelector<HTMLButtonElement>('.checkout-button')!;
+    expect(checkout.disabled).toBe(true);
+    expect(seats[5].disabled).toBe(true);
+    seats[5].click();
+    Array.from(seats)
+      .slice(0, 4)
+      .forEach((seat) => seat.click());
+    harness.detectChanges();
+    expect(page.querySelectorAll('.seat.selected')).toHaveLength(4);
+    expect(seats[4].disabled).toBe(true);
+    expect(seats[0].getAttribute('aria-pressed')).toBe('true');
+    expect(page.querySelector('.selection-footer')?.textContent).toContain('4 de 4 assentos');
+
+    seats[0].click();
+    harness.detectChanges();
+    expect(seats[4].disabled).toBe(false);
+    expect(seats[0].getAttribute('aria-pressed')).toBe('false');
+    seats[4].click();
+    harness.detectChanges();
+    checkout.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    const params = TestBed.inject(Router).parseUrl(TestBed.inject(Router).url).queryParams;
+    expect(params).toEqual({
+      travelId: 'trip-1',
+      from: 'São Paulo, SP',
+      to: 'Curitiba, PR',
+      departure: '2026-10-11T08:30:00',
+      company: '1001',
+      seatClass: 'EXECUTIVO',
+      seats: '02,03,04,05',
+      price: '79.9',
+    });
+    expect(harness.routeNativeElement!.querySelector('.total')?.textContent).toContain('319,60');
+    http.verify();
   });
 });

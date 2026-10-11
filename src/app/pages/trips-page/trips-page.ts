@@ -1,4 +1,13 @@
-import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  DOCUMENT,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
@@ -24,6 +33,7 @@ export class TripsPage {
   private readonly seatsService = inject(SeatsService);
   private readonly tripsService = inject(TripsService);
   private readonly router = inject(Router);
+  private readonly window = inject(DOCUMENT).defaultView;
   private seatsRequest?: Subscription;
   protected readonly from = computed(() => this.params().get('from') ?? '');
   protected readonly to = computed(() => this.params().get('to') ?? '');
@@ -84,6 +94,25 @@ export class TripsPage {
   }
 
   protected openSeats(trip: Trip) {
+    if (this.window?.matchMedia?.('(max-width: 720px)').matches) {
+      void this.router.navigate(['/assentos'], {
+        queryParams: {
+          travelId: trip.id,
+          from: trip.from.name,
+          to: trip.to.name,
+          departureDate: trip.departure.date,
+          departureTime: trip.departure.time,
+          company: trip.company.name,
+          seatClass: trip.seatClass,
+          price: trip.price.price,
+          searchFrom: this.from(),
+          searchTo: this.to(),
+          date: this.date(),
+        },
+      });
+      return;
+    }
+
     this.seatsRequest?.unsubscribe();
     this.selectedTrip.set(trip);
     this.layouts.set([]);
