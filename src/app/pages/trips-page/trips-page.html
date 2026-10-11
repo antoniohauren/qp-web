@@ -84,6 +84,7 @@
           <span>{{ formatDateTime(trip.departure) }}</span>
           <span>{{ trip.company.name }}</span>
           <span>{{ trip.seatClass }}</span>
+          <span>{{ formatPrice(trip.price.price) }} por assento</span>
         </div>
       </div>
       <button class="close-button" type="button" aria-label="Fechar" (click)="closeSeats()">

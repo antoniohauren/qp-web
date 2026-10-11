@@ -4,6 +4,42 @@ import { TestBed } from '@angular/core/testing';
 import { SeatSelector } from './seat-selector';
 
 describe('SeatSelector', () => {
+  it.each([0, 2, 5])('caps the default limit at available seats (%s)', (available) => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    Object.assign(globalThis, { API_URL: 'http://127.0.0.1:8000' });
+    const fixture = TestBed.createComponent(SeatSelector);
+    const http = TestBed.inject(HttpTestingController);
+    const element: HTMLElement = fixture.nativeElement;
+    fixture.componentRef.setInput('travelId', 'trip-1');
+    fixture.detectChanges();
+    http.expectOne('http://127.0.0.1:8000/api/seats').flush(
+      [0, 1].map((floor) => ({
+        orientation: 'horizontal',
+        floor,
+        seatsLayout: 'numbered',
+        seats: [[
+          ...[1, 2, 3].map((number) => ({
+            seat: String(floor * 3 + number),
+            position: { x: number, y: 0, z: floor },
+            occupied: floor * 3 + number > available,
+            type: 'seat',
+          })),
+          { seat: null, position: { x: 4, y: 0, z: floor }, type: 'emptyOrReservedSpace' },
+        ]],
+      })),
+    );
+    fixture.detectChanges();
+    const limit = Math.min(4, available);
+    expect(element.textContent).toContain(`0 de ${limit} assentos`);
+    element.querySelectorAll<HTMLButtonElement>('.seat').forEach((seat) => seat.click());
+    fixture.detectChanges();
+    expect(element.querySelectorAll('.seat.selected')).toHaveLength(limit);
+    expect(element.textContent).toContain(`${limit} de ${limit} assentos`);
+    http.verify();
+  });
+
   it('keeps selection and checkout within a reduced limit, including zero', () => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],

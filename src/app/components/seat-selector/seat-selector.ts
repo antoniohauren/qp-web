@@ -15,8 +15,14 @@ export class SeatSelector {
   protected readonly layouts = signal<SeatsLayout[]>([]);
   protected readonly loading = signal(false);
   protected readonly loadError = signal(false);
+  protected readonly availableSeats = computed(
+    () =>
+      this.layouts()
+        .flatMap((layout) => layout.seats.flat())
+        .filter((cell) => cell.type === 'seat' && cell.seat && !cell.occupied).length,
+  );
   protected readonly passengerLimit = computed(() =>
-    Math.min(4, this.maximumAllowedPassengers() ?? 4),
+    Math.min(4, this.maximumAllowedPassengers() ?? 4, this.availableSeats()),
   );
   protected readonly selectedSeats = linkedSignal<number, string[]>({
     source: this.passengerLimit,

@@ -121,6 +121,7 @@ describe('TripsPage', () => {
     expect(dialog.textContent).toContain('São Paulo, SP - Rodoviária do Tietê');
     expect(dialog.textContent).toContain('Curitiba, PR - Rodoviária');
     expect(dialog.textContent).toContain('1001');
+    expect(dialog.textContent).toContain('R$ 79,90 por assento');
     const seats = dialog.querySelectorAll<HTMLButtonElement>('.seat');
     expect(Array.from(seats, (seat) => seat.textContent?.trim())).toEqual([
       '01',

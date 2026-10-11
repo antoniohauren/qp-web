@@ -70,7 +70,7 @@ describe('SeatsPage', () => {
     harness.fixture.detectChanges();
 
     const seats = harness.routeNativeElement?.querySelectorAll('.seat');
-    expect(harness.routeNativeElement?.textContent).toContain('0 de 4 assentos');
+    expect(harness.routeNativeElement?.textContent).toContain('0 de 2 assentos');
     expect(Array.from(seats ?? [], (seat) => seat.textContent?.trim())).toEqual([
       '03',
       '04',
