@@ -2,7 +2,10 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
+import { Subject } from 'rxjs';
 import { afterEach, vi } from 'vitest';
+import { Stop, StopsService } from '../../services/stops.service';
 import { HomePage } from './home-page';
 
 describe('HomePage', () => {
@@ -16,6 +19,7 @@ describe('HomePage', () => {
       imports: [HomePage],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
     const station = {
       id: 'ROD_948',
@@ -130,7 +134,14 @@ describe('HomePage', () => {
       nextDay();
       click('.search-button');
 
-      expect(navigate).not.toHaveBeenCalled();
+      expect(navigate).not.toHaveBeenCalledWith(['/passagens'], expect.anything());
+      expect(navigate).toHaveBeenLastCalledWith(
+        [],
+        expect.objectContaining({
+          queryParams: { from: 'ROD_948', to: 'CIT_940', date: null },
+          replaceUrl: true,
+        }),
+      );
       expect(navigateByUrl).not.toHaveBeenCalled();
       expect(fixture.nativeElement.querySelector('.search-button').disabled).toBe(true);
       expect(fixture.nativeElement.querySelectorAll('.stop-selector')[2].textContent).toContain(
@@ -356,5 +367,117 @@ describe('HomePage', () => {
       .expectOne('http://127.0.0.1:8000/api/stops')
       .flush([]);
     loadingFixture.destroy();
+  });
+});
+
+describe('HomePage URL state', () => {
+  let harness: RouterTestingHarness;
+  let stops: Subject<Stop[]>;
+  const cities: Stop[] = [
+    {
+      id: 'city',
+      name: 'Available city',
+      url: 'city',
+      type: 'city',
+      available: true,
+      substops: [
+        { id: 'station', name: 'Bus station', url: 'station', type: 'station', sub_type: null },
+      ],
+    },
+    { id: 'unavailable', name: 'Unavailable city', url: 'unavailable', type: 'city', available: false },
+  ];
+
+  beforeEach(async () => {
+    stops = new Subject<Stop[]>();
+    await TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: '', component: HomePage }]),
+        { provide: StopsService, useValue: { getStops: () => stops } },
+      ],
+    }).compileComponents();
+    harness = await RouterTestingHarness.create();
+  });
+
+  async function open(url: string) {
+    await harness.navigateByUrl(url, HomePage);
+    stops.next(cities);
+    stops.complete();
+    harness.detectChanges();
+    for (const dialog of harness.routeNativeElement!.querySelectorAll('dialog')) {
+      Object.assign(dialog, {
+        close: () => dialog.removeAttribute('open'),
+        showModal: () => dialog.setAttribute('open', ''),
+      });
+    }
+  }
+
+  async function click(selector: string) {
+    harness.routeNativeElement!.querySelector<HTMLButtonElement>(selector)!.click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+  }
+
+  function labels() {
+    return Array.from(
+      harness.routeNativeElement!.querySelectorAll('.stop-selector'),
+      (el) => el.textContent,
+    );
+  }
+
+  it('restores city, station and date after stops load, and follows URL navigation', async () => {
+    await open('/?from=station&to=city&date=2099-02-02');
+    expect(labels()[0]).toContain('Bus station');
+    expect(labels()[1]).toContain('Available city');
+    expect(labels()[2]).toContain('2 de fevereiro de 2099');
+    expect(harness.routeNativeElement!.querySelector<HTMLButtonElement>('.search-button')!.disabled).toBe(false);
+
+    await harness.navigateByUrl('/?from=city', HomePage);
+    expect(labels()[0]).toContain('Available city');
+    expect(labels()[1]).toContain('Selecione local');
+    expect(labels()[2]).toContain('Selecione a data de embarque');
+  });
+
+  it('mirrors stop selection, date confirmation and swap while preserving unrelated params', async () => {
+    await open('/?campaign=test');
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate');
+    await click('.stop-selector:nth-child(1)');
+    await click('.stop-list button');
+    expect(router.parseUrl(router.url).queryParams).toEqual({ campaign: 'test', from: 'city' });
+    await click('.stop-selector:nth-child(2)');
+    await click('.stop-list button');
+    await click('.stop-selector:nth-child(3)');
+    const day = harness.routeNativeElement!.querySelector<HTMLButtonElement>(
+      '.calendar-day:not(:disabled):not(.outside-month)',
+    )!;
+    const date = day.dataset['date'];
+    await click(`[data-date="${date}"]`);
+    await click('.confirm-button');
+    expect(router.parseUrl(router.url).queryParams).toEqual({
+      campaign: 'test', from: 'city', to: 'station', date,
+    });
+    await click('.swap-stops');
+    expect(router.parseUrl(router.url).queryParams).toEqual({
+      campaign: 'test', from: 'station', to: 'city', date,
+    });
+    expect(labels()[0]).toContain('Bus station');
+    expect(navigate).toHaveBeenLastCalledWith([], expect.objectContaining({ replaceUrl: true }));
+  });
+
+  it.each(['invalid', '2099-02-30', '2000-01-01'])('ignores unknown stops and invalid or expired date %s', async (date) => {
+    await open(`/?from=missing&to=city&date=${date}`);
+    expect(labels()[0]).toContain('Selecione local');
+    expect(labels()[1]).toContain('Available city');
+    expect(labels()[2]).toContain('Selecione a data de embarque');
+    expect(harness.routeNativeElement!.querySelector<HTMLButtonElement>('.search-button')!.disabled).toBe(true);
+  });
+
+  it('keeps unavailable routes disabled and rejects duplicate endpoints', async () => {
+    await open('/?from=unavailable&to=city&date=2099-02-02');
+    expect(labels()[0]).toContain('Unavailable city');
+    expect(harness.routeNativeElement!.querySelector<HTMLButtonElement>('.search-button')!.disabled).toBe(true);
+    await harness.navigateByUrl('/?from=city&to=city&date=2099-02-02', HomePage);
+    expect(labels()[1]).toContain('Selecione local');
+    expect(harness.routeNativeElement!.querySelector<HTMLButtonElement>('.search-button')!.disabled).toBe(true);
   });
 });

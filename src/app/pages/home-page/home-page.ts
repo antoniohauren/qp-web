@@ -1,6 +1,7 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIcon } from '@angular/material/icon';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Temporal } from '@js-temporal/polyfill';
 import { DatePickerDialog } from '../../components/date-picker-dialog/date-picker-dialog';
 import {
@@ -20,18 +21,34 @@ import { Stop, StopsService } from '../../services/stops.service';
 export class HomePage {
   private readonly stopsService = inject(StopsService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly params = toSignal(this.route.queryParamMap, { requireSync: true });
   protected readonly cities = signal<Stop[]>([]);
   protected readonly loadError = signal(false);
   protected readonly loading = signal(true);
-  protected readonly selectedDate = signal('');
+  protected readonly selectedDate = linkedSignal(() => {
+    const date = this.params().get('date') ?? '';
+    try {
+      return /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+        Temporal.PlainDate.compare(date, Temporal.Now.plainDateISO()) >= 0
+        ? date
+        : '';
+    } catch {
+      return '';
+    }
+  });
   protected readonly selectedDateLabel = computed(() => {
     const date = this.selectedDate();
     return date
       ? Temporal.PlainDate.from(date).toLocaleString('pt-BR', { dateStyle: 'long' })
       : 'Selecione a data de embarque';
   });
-  protected readonly selectedDestination = signal<StopOption | null>(null);
-  protected readonly selectedStop = signal<StopOption | null>(null);
+  protected readonly selectedDestination = linkedSignal(() =>
+    this.params().get('to') === this.params().get('from')
+      ? null
+      : this.resolveStop(this.params().get('to')),
+  );
+  protected readonly selectedStop = linkedSignal(() => this.resolveStop(this.params().get('from')));
   protected readonly unavailableSelection = computed(
     () =>
       !this.loading() &&
@@ -62,12 +79,40 @@ export class HomePage {
     } else {
       this.selectedDestination.set(stop);
     }
+    this.syncParams();
+  }
+
+  protected selectDate(date: string) {
+    this.selectedDate.set(date);
+    this.syncParams();
+  }
+
+  private resolveStop(id: string | null): StopOption | null {
+    for (const city of this.cities()) {
+      if (city.id === id) return city;
+      const station = city.substops?.find((stop) => stop.id === id);
+      if (station) return { ...station, available: true };
+    }
+    return null;
+  }
+
+  private syncParams() {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        from: this.selectedStop()?.id ?? null,
+        to: this.selectedDestination()?.id ?? null,
+        date: this.selectedDate() || null,
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   protected search() {
     const date = this.selectedDate();
     if (date && Temporal.PlainDate.compare(date, Temporal.Now.plainDateISO()) < 0) {
-      this.selectedDate.set('');
+      this.selectDate('');
       return;
     }
     if (this.loading() || this.searchDisabled()) return;
@@ -86,5 +131,6 @@ export class HomePage {
     this.selectedStop.set(this.selectedDestination());
     this.selectedDestination.set(origin);
     this.swapAnimation.update((animation) => (animation === 'swap-a' ? 'swap-b' : 'swap-a'));
+    this.syncParams();
   }
 }
