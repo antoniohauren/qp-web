@@ -20,6 +20,13 @@ export class SeatsPage {
     date: this.params().get('date'),
   }));
   protected readonly travelId = computed(() => this.params().get('travelId') ?? '');
+  protected readonly maximumAllowedPassengers = computed(() => {
+    const value = this.params().get('maximumAllowedPassengers');
+    if (value === null) return null;
+
+    const limit = Number(value);
+    return value.trim() && Number.isInteger(limit) && limit >= 0 ? limit : null;
+  });
   protected readonly from = computed(() => this.params().get('from') ?? '');
   protected readonly to = computed(() => this.params().get('to') ?? '');
   protected readonly company = computed(() => this.params().get('company') ?? '');

@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, linkedSignal, output, signal } from '@angular/core';
 import { SeatsLayout, SeatsService } from '../../services/seats.service';
 
 @Component({
@@ -8,14 +8,23 @@ import { SeatsLayout, SeatsService } from '../../services/seats.service';
 })
 export class SeatSelector {
   readonly travelId = input.required<string>();
+  readonly maximumAllowedPassengers = input<number | null>(null);
   readonly headingLevel = input<2 | 3>(2);
   readonly checkout = output<string[]>();
   private readonly seatsService = inject(SeatsService);
   protected readonly layouts = signal<SeatsLayout[]>([]);
   protected readonly loading = signal(false);
   protected readonly loadError = signal(false);
-  protected readonly selectedSeats = signal<string[]>([]);
-  protected readonly selectionFull = computed(() => this.selectedSeats().length === 4);
+  protected readonly passengerLimit = computed(() =>
+    Math.min(4, this.maximumAllowedPassengers() ?? 4),
+  );
+  protected readonly selectedSeats = linkedSignal<number, string[]>({
+    source: this.passengerLimit,
+    computation: (limit, previous) => previous?.value.slice(0, limit) ?? [],
+  });
+  protected readonly selectionFull = computed(
+    () => this.selectedSeats().length >= this.passengerLimit(),
+  );
 
   constructor() {
     effect((onCleanup) => {
@@ -50,7 +59,7 @@ export class SeatSelector {
   protected toggleSeat(seat: string) {
     this.selectedSeats.update((selected) => {
       if (selected.includes(seat)) return selected.filter((item) => item !== seat);
-      return selected.length < 4 ? [...selected, seat] : selected;
+      return selected.length < this.passengerLimit() ? [...selected, seat] : selected;
     });
   }
 

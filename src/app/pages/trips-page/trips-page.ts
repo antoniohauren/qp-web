@@ -90,6 +90,7 @@ export class TripsPage {
       void this.router.navigate(['/assentos'], {
         queryParams: {
           travelId: trip.id,
+          maximumAllowedPassengers: trip.maximumAllowedPassengers,
           from: trip.from.name,
           to: trip.to.name,
           departureDate: trip.departure.date,

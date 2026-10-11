@@ -6,7 +6,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { SeatsPage } from './seats-page';
 
 describe('SeatsPage', () => {
-  it('posts the travel id and renders the seat matrix', async () => {
+  it.each(['', '&maximumAllowedPassengers=abc', '&maximumAllowedPassengers=-1', '&maximumAllowedPassengers=1.5', '&maximumAllowedPassengers='])('renders the seat matrix with fallback limit for query %s', async (query) => {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -16,7 +16,7 @@ describe('SeatsPage', () => {
     });
     Object.assign(globalThis, { API_URL: 'http://127.0.0.1:8000' });
     const harness = await RouterTestingHarness.create(
-      '/assentos?travelId=trip-1&from=Adamantina%2C%20SP&to=Maring%C3%A1%2C%20PR&company=1001&seatClass=SEMI%20LEITO&departureDate=2026-11-11&departureTime=00%3A30%3A00',
+      '/assentos?travelId=trip-1&from=Adamantina%2C%20SP&to=Maring%C3%A1%2C%20PR&company=1001&seatClass=SEMI%20LEITO&departureDate=2026-11-11&departureTime=00%3A30%3A00' + query,
     );
     const request = TestBed.inject(HttpTestingController).expectOne(
       'http://127.0.0.1:8000/api/seats',
@@ -70,6 +70,7 @@ describe('SeatsPage', () => {
     harness.fixture.detectChanges();
 
     const seats = harness.routeNativeElement?.querySelectorAll('.seat');
+    expect(harness.routeNativeElement?.textContent).toContain('0 de 4 assentos');
     expect(Array.from(seats ?? [], (seat) => seat.textContent?.trim())).toEqual([
       '03',
       '04',

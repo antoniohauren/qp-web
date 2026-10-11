@@ -103,12 +103,12 @@
   }
   <footer class="selection-footer">
     <div aria-live="polite">
-      <strong>{{ selectedSeats().length }} de 4 assentos</strong>
+      <strong>{{ selectedSeats().length }} de {{ passengerLimit() }} assentos</strong>
       <span>
         @if (selectedSeats().length) {
           {{ selectedSeats().join(', ') }}
         } @else {
-          Selecione até quatro lugares
+          Selecione até {{ passengerLimit() }} lugares
         }
       </span>
     </div>

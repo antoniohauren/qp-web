@@ -11,7 +11,8 @@ import { TripsPage } from './trips-page';
 describe('TripsPage', () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it('renders trips returned for the route', async () => {
+  it.each([2, null, 8])('enforces desktop trip limit %s', async (maximumAllowedPassengers) => {
+    const limit = Math.min(4, maximumAllowedPassengers ?? 4);
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -30,6 +31,7 @@ describe('TripsPage', () => {
     http.expectOne('http://127.0.0.1:8000/api/search/ROD_948/CIT_940/2026-10-11').flush([
       {
         id: 'trip-1',
+        maximumAllowedPassengers,
         company: { id: '2', name: '1001' },
         from: { name: 'São Paulo, SP - Rodoviária do Tietê' },
         to: { name: 'Curitiba, PR - Rodoviária' },
@@ -133,9 +135,12 @@ describe('TripsPage', () => {
       .forEach((seat) => seat.click());
     harness.fixture.detectChanges();
 
-    expect(dialog.querySelectorAll('.seat.selected').length).toBe(4);
+    expect(dialog.querySelectorAll('.seat.selected').length).toBe(limit);
+    expect(seats[limit].disabled).toBe(true);
     expect(seats[4].disabled).toBe(true);
-    expect(dialog.querySelector('.selection-footer')?.textContent).toContain('4 de 4 assentos');
+    expect(dialog.querySelector('.selection-footer')?.textContent).toContain(
+      `${limit} de ${limit} assentos`,
+    );
 
     dialog.querySelector<HTMLButtonElement>('.close-button')!.click();
     harness.detectChanges();
@@ -181,7 +186,8 @@ describe('TripsPage', () => {
     http.verify();
   });
 
-  it('uses the seat page on mobile and carries the selection and fare to checkout', async () => {
+  it.each([2, null, 8])('enforces mobile trip limit %s through checkout', async (maximumAllowedPassengers) => {
+    const limit = Math.min(4, maximumAllowedPassengers ?? 4);
     const matchMedia = vi.fn().mockReturnValue({ matches: true });
     vi.stubGlobal('matchMedia', matchMedia);
     TestBed.configureTestingModule({
@@ -203,6 +209,7 @@ describe('TripsPage', () => {
     http.expectOne('http://127.0.0.1:8000/api/search/ROD_948/CIT_940/2026-10-11').flush([
       {
         id: 'trip-1',
+        maximumAllowedPassengers,
         company: { id: '2', name: '1001' },
         from: { name: 'São Paulo, SP' },
         to: { name: 'Curitiba, PR' },
@@ -256,10 +263,13 @@ describe('TripsPage', () => {
       .slice(0, 4)
       .forEach((seat) => seat.click());
     harness.detectChanges();
-    expect(page.querySelectorAll('.seat.selected')).toHaveLength(4);
+    expect(page.querySelectorAll('.seat.selected')).toHaveLength(limit);
+    expect(seats[limit].disabled).toBe(true);
     expect(seats[4].disabled).toBe(true);
     expect(seats[0].getAttribute('aria-pressed')).toBe('true');
-    expect(page.querySelector('.selection-footer')?.textContent).toContain('4 de 4 assentos');
+    expect(page.querySelector('.selection-footer')?.textContent).toContain(
+      `${limit} de ${limit} assentos`,
+    );
 
     seats[0].click();
     harness.detectChanges();
@@ -279,10 +289,12 @@ describe('TripsPage', () => {
       departure: '2026-10-11T08:30:00',
       company: '1001',
       seatClass: 'EXECUTIVO',
-      seats: '02,03,04,05',
+      seats: limit === 2 ? '02,05' : '02,03,04,05',
       price: '79.9',
     });
-    expect(harness.routeNativeElement!.querySelector('.total')?.textContent).toContain('319,60');
+    expect(harness.routeNativeElement!.querySelector('.total')?.textContent).toContain(
+      limit === 2 ? '159,80' : '319,60',
+    );
     http.verify();
   });
 });

@@ -28,5 +28,9 @@
     </div>
   </header>
 
-  <app-seat-selector [travelId]="travelId()" (checkout)="goToCheckout($event)" />
+  <app-seat-selector
+    [travelId]="travelId()"
+    [maximumAllowedPassengers]="maximumAllowedPassengers()"
+    (checkout)="goToCheckout($event)"
+  />
 </main>

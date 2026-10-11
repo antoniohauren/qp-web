@@ -94,6 +94,7 @@
     <app-seat-selector
       class="dialog"
       [travelId]="trip.id"
+      [maximumAllowedPassengers]="trip.maximumAllowedPassengers"
       [headingLevel]="3"
       (checkout)="goToCheckout($event)"
     />
