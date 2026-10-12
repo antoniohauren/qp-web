@@ -56,6 +56,7 @@ describe('App navigation focus', () => {
       await fixture.whenStable();
 
       expect(focusSpy).toHaveBeenCalledTimes(1);
+      expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
       expect(renderedHeadings.at(-1)).toContain(heading);
       expect(document.activeElement).toBe(host.querySelector('main'));
     }

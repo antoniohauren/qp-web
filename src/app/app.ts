@@ -14,7 +14,9 @@ export class App {
   constructor() {
     afterRenderEffect(() => {
       if (this.activatedPage()) {
-        this.host.nativeElement.querySelector<HTMLElement>('main[tabindex="-1"]')?.focus();
+        this.host.nativeElement
+          .querySelector<HTMLElement>('main[tabindex="-1"]')
+          ?.focus({ preventScroll: true });
       }
     });
   }
