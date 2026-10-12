@@ -77,7 +77,6 @@ input {
 }
 
 .close-button:focus-visible,
-.stop-list button:focus-visible,
 input:focus-visible {
   outline: 3px solid var(--mat-sys-primary);
   outline-offset: 3px;
@@ -113,6 +112,14 @@ input:focus-visible {
 
 .stop-list button:hover {
   background: var(--mat-sys-surface-container-low);
+}
+
+.stop-list button:focus-visible {
+  outline: 3px solid var(--mat-sys-primary);
+  outline-offset: -3px;
+  border-radius: 8px;
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
 }
 
 .stop-list button.child-stop {
