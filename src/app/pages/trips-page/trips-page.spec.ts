@@ -61,12 +61,25 @@ describe('TripsPage', () => {
 
     const dialog = harness.routeNativeElement?.querySelector<HTMLDialogElement>('.seats-dialog');
     if (!dialog) throw new Error('Seats dialog not found');
+    const showModal = vi.fn(() => {
+      dialog.setAttribute('open', '');
+      return {
+        title: document.getElementById(dialog.getAttribute('aria-labelledby')!)?.textContent,
+        focusTarget: dialog.querySelector('[autofocus]'),
+      };
+    });
     Object.assign(dialog, {
-      showModal: () => dialog.setAttribute('open', ''),
+      showModal,
       close: () => dialog.removeAttribute('open'),
     });
     harness.routeNativeElement?.querySelector<HTMLButtonElement>('.choose-button')?.click();
     harness.fixture.detectChanges();
+    expect(showModal).toHaveBeenCalledTimes(1);
+    expect(showModal).toHaveReturnedWith({
+      title: expect.stringContaining('São Paulo, SP - Rodoviária do Tietê'),
+      focusTarget: dialog.querySelector('.close-button'),
+    });
+    expect(dialog.querySelector('.close-button')?.hasAttribute('autofocus')).toBe(true);
     const seatsRequest = http.expectOne('http://127.0.0.1:8000/api/seats');
     expect(seatsRequest.request.method).toBe('POST');
     expect(seatsRequest.request.body).toEqual({ travelId: 'trip-1' });

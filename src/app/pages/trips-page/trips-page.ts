@@ -2,6 +2,7 @@ import {
   Component,
   DOCUMENT,
   ElementRef,
+  afterRenderEffect,
   computed,
   effect,
   inject,
@@ -49,6 +50,12 @@ export class TripsPage {
   });
 
   constructor() {
+    afterRenderEffect(() => {
+      if (this.selectedTrip()) {
+        this.seatsDialog().nativeElement.showModal();
+      }
+    });
+
     effect((onCleanup) => {
       if (!this.complete()) return;
 
@@ -107,7 +114,6 @@ export class TripsPage {
     }
 
     this.selectedTrip.set(trip);
-    this.seatsDialog().nativeElement.showModal();
   }
 
   protected closeSeats() {
