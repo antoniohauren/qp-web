@@ -40,7 +40,7 @@
       <button
         class="calendar-day"
         type="button"
-        [attr.aria-label]="day.date.toLocaleString('pt-BR', { dateStyle: 'long' })"
+        [attr.aria-label]="day.date.toLocaleString('pt-BR', { dateStyle: 'full' })"
         [attr.aria-pressed]="isSelected(day.date)"
         [attr.data-date]="day.date.toString()"
         [class.outside-month]="day.outsideMonth"
